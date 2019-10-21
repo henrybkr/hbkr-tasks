@@ -65,9 +65,17 @@ export default {
     },
     addTask(newTask) { 
       this.taskList.push({
+        // Identifiers
         id: newTask.id,
         title: newTask.title,
-        completed: false
+
+        // Timestamp stuff
+        added: newTask.added,
+        lastEdit: newTask.lastEdit,
+
+        // Flags
+        editing: newTask.editing,
+        completed: newTask.completed,
       })
     },
     // Used to check all elements in the list

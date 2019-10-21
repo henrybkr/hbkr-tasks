@@ -9,13 +9,15 @@
 </template>
 
 <script>
+import { format } from 'date-fns'
 // import uuid from 'uuid';
 export default {
 	name: "AddTask",
 	data() {
 		return {
+			format,
 			// This needs adjusting. 4 is the current ID but needs to be from db or something
-			currentID: 3,
+			currentID: 2,
 			title: ''
 		}
 	},
@@ -26,21 +28,38 @@ export default {
 			// Check to see if the entered title is empty. Skip if empty. Potentially return error to user here.
 			// This works by using the trim function to remove any whitespace. If there is only whitespace, the length will be 0.
 			if (this.title.trim().length == 0) {
-				return
+				return false
 			}
+			else {
+				let dateTime = format(new Date(), 'yyyy-MM-dd-hh-mm-ss')
+				alert(dateTime);
 
-			const newTask = {
-				//id: uuid.v4(),
-				id: this.currentID,
-				title: this.title,
-				completed: false
+				const newTask = {
+
+					// Identifiers
+					id: this.currentID,
+					title: this.title,
+
+					
+
+
+					// Timestamp stuff
+					added: format(new Date(), 'yyyy-MM-dd-hh-mm-ss'),
+					lastEdit: format(new Date(), 'yyyy-MM-dd-hh-mm-ss'),
+
+					// Flags
+					editing: false,
+					completed: false,
+
+				}
+				// Send up to parent
+				this.$emit('add-task', newTask);
+
+				// Clear the entered title once submitted and increment the id.
+				this.title = '';
+				this.currentID+=1;
+				return true;
 			}
-			// Send up to parent
-			this.$emit('add-task', newTask);
-
-			// Clear the entered title once submitted and increment the id.
-			this.title = '';
-			this.currentID+=1;
 		}
 	}
 }
