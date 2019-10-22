@@ -29,7 +29,7 @@ export default {
 	data() {
 		return {
 			// This needs adjusting. 4 is the current ID but needs to be from db or something
-			editDelay: false
+			editDelay: false,
 		}
 	},
 	directives: {
@@ -42,6 +42,8 @@ export default {
 		}
 	},
 	methods: {
+		/* global eventBus */
+		
 		/*
 		markComplete() {
 			this.task.completed = !this.task.completed;
@@ -80,10 +82,7 @@ export default {
 			task.editing = false;
 		},
 		singleDeleteTask(task) {
-			/* global eventBus */
-			// Note, above is for eslint so it understands that eventBus is global and doesn't display as undefined.
-
-			eventBus.$emit('myDelete', task.id, task.title)
+			eventBus.$emit('singleDelete', task.id, task.title)
 		}
 	}
 }

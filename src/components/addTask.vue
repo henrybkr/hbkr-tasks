@@ -22,6 +22,8 @@ export default {
 		}
 	},
 	methods: {
+		/* global eventBus */
+		
 		addTask(e) {
 			e.preventDefault();
 			
@@ -32,7 +34,7 @@ export default {
 			}
 			else {
 				let dateTime = format(new Date(), 'yyyy-MM-dd-hh-mm-ss')
-				alert(dateTime);
+				//alert(dateTime);
 
 				const newTask = {
 
@@ -40,20 +42,17 @@ export default {
 					id: this.currentID,
 					title: this.title,
 
-					
-
-
 					// Timestamp stuff
-					added: format(new Date(), 'yyyy-MM-dd-hh-mm-ss'),
-					lastEdit: format(new Date(), 'yyyy-MM-dd-hh-mm-ss'),
+					added: dateTime,
+					lastEdit: dateTime,
 
 					// Flags
 					editing: false,
 					completed: false,
 
 				}
-				// Send up to parent
-				this.$emit('add-task', newTask);
+				// emit to event bus
+				eventBus.$emit('addTask', newTask);
 
 				// Clear the entered title once submitted and increment the id.
 				this.title = '';

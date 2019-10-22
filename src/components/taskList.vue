@@ -42,13 +42,19 @@
 </template>
 
 <script>
+import { compareAsc, format } from 'date-fns'
+
 import todoItem from './todoItem.vue';
-//import { get } from 'http';
 
 export default {
 	name: "taskList",
 	data () {
 		return {
+			// Imports
+			format, compareAsc,
+			
+			// temporary cache for the edit, to remember what it was before changing it
+			beforeEditCache: '',
 			filter: 'all',
 		}
 	},
@@ -118,25 +124,87 @@ export default {
 		}
 	},
 	methods: {
-		
-		// Method to clear checked items from the list. Filters the list and emits the new list.
-		// Might be a more efficient way of doing this (future improvement)
-		clearCompleted: function() {
-			// 
-			let x = this.taskList.filter(task => !task.completed)
+		// Method to add a new task
+		addTask(newTask) {
+			this.taskList.push({
+				// Identifiers
+				id: newTask.id,
+				title: newTask.title,
 
+				// Timestamp stuff
+				added: newTask.added,
+				lastEdit: newTask.lastEdit,
+
+				// Flags
+				editing: newTask.editing,
+				completed: newTask.completed,
+			})
+		},
+		// Method to delete a single task.
+		// note: mustConfirm, the first input defines whether the user is warned about the delete.
+		deleteTask(mustConfirm, index, taskTitle) {
+			let conf = true;	// Assume true, for now.
+			if (mustConfirm) {
+				// Allow for the chance for user to cancel the operation by setting conf to false when cancelling.
+				conf = confirm("Please confirm you want to delete the following task:\n\nID: "+index+"\nTitle: "+taskTitle);
+			}
+			
+			// Double check can continue
+			if (conf == true) {
+				//this.taskList.splice(index, 1) //Note to self, this SHOULD work, but has some weird effects. For example, deleting from a list of three starting with two, then going to delete 3 outputs an error.
+				//this.taskList.splice(task => task.id === index, 1) // Similar to above. Deleting two first (success), then deleting three seems to delete one instead. Odd.
+				// Gone with a filter route for now until performance becomes a concern. See above comments.
+				this.taskList = this.taskList.filter(task => task.id !== index)
+			}
+		},
+		// Method to clear checked items from the list. Filters the list for checked tasks and loops through them.
+		// Previously done by updating the whole list, this should be more efficient when long lists exist.
+		clearCompleted: function() {
+
+			// Create an array of task objects that should be deleted.
+			let toDelete = this.taskList.filter(task => task.completed);
+			
 			try {
-				this.$emit('updateList', x);
-				return true;
+				let conf = confirm("Are you sure you want to delete "+toDelete.length+" task(s) from your list.");
+					if (conf == true) {
+						//this.updateList(x);
+						for (let num in toDelete)
+							this.deleteTask(false, toDelete[num].id, toDelete[num].title); // Disable additional confirmation about deleting. Already asked.
+						return true;
+					}
 			} catch (error) {
 				alert("Looks like there was an error:\n"+error);
 				return false;
 			}
 		},
-		checkAllTasks: function() {
-			/* global eventBus */
-			eventBus.$emit('checkAllTasks')
+		// Method of check all of the tasks in the list.
+		checkAllTasks() {
+			this.taskList.forEach((task) => task.completed = event.target.checked);
+		},
+		// Simply updates the current list of tasks with the given new list.
+		updateList(newList) {
+			this.taskList = newList;
+		},
+
+		updateTaskTitle(inputID, newTitle) {
+
+			// Only continue if a single result is found for the filtered task.
+
+			if (this.taskList.filter(task => task.id !== inputID).length == 1) {
+				// Update the task to the new title and update the last edit time.
+				this.taskList.filter(task => task.id === inputID)[0].title = newTitle;
+				this.taskList.filter(task => task.id === inputID)[0].lastEdit = format(new Date(), 'yyyy-MM-dd-hh-mm-ss');
+			}
 		}
+	},
+	created() {
+		/* global eventBus */
+
+		// Event listeners to fire immediately.
+		eventBus.$on('singleDelete', (id, title) => this.deleteTask(true, id, title));	// enable the flag that ensures user confirms.
+		eventBus.$on('addTask', (newTask) => this.addTask(newTask));
+		eventBus.$on('checkAllTasks', () => this.checkAllTasks());
+		eventBus.$on('updateTaskTitle', (id, newTitle) => this.updateTaskTitle(id, newTitle));
 	}
 }
 </script>
