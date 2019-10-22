@@ -29,7 +29,9 @@ export default {
           'completed': false,
           'editing': false,
           'added': "2017-01-01-10-00-00",
-          'lastEdit': "2017-01-01-10-00-00"
+          'lastEdit': "2017-01-01-10-00-00",
+          'pinned': false,
+          'userOrder': 2,
         },
         {
           'id': 1,
@@ -37,7 +39,39 @@ export default {
           'completed': true,
           'editing': false,
           'added': "2018-01-01-10-00-00",
-          'lastEdit': "2018-01-01-10-00-00"
+          'lastEdit': "2018-01-01-10-00-00",
+          'pinned': true,
+          'userOrder': 1,
+        },
+        {
+          'id': 2,
+          'title': "Woah, this is a third example!",
+          'completed': false,
+          'editing': false,
+          'added': "2016-01-01-10-00-00",
+          'lastEdit': "2016-01-01-10-00-00",
+          'pinned': false,
+          'userOrder': 3,
+        },
+        {
+          'id': 3,
+          'title': "Number four",
+          'completed': false,
+          'editing': false,
+          'added': "2016-01-01-10-00-00",
+          'lastEdit': "2016-01-01-10-00-00",
+          'pinned': false,
+          'userOrder': 4,
+        },
+        {
+          'id': 4,
+          'title': "Task num 5 yo!",
+          'completed': false,
+          'editing': false,
+          'added': "2016-01-01-10-00-00",
+          'lastEdit': "2016-01-01-10-00-00",
+          'pinned': true,
+          'userOrder': 0,
         },
       ]
     }

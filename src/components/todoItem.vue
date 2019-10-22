@@ -7,10 +7,13 @@
 				<div v-if="!task.editing" @dblclick="editMode(task)" class="todo-item-label"><p>{{task.title}}</p></div>
 				<input v-else class="todo-item-edit" @blur="editComplete(task)" @keyup.enter="editComplete(task)" @keyup.esc="editCancel(task)" v-focus type="text"  v-model="task.title">
 			</div>
+			<button :class="{ active: important == true }" @click="testme(task)" class="pin-button myAnimation" ><font-awesome-icon icon="bookmark" /></button>
 			<div class="todo-del">
-				<!-- Delete button with onclick delete emit command -->
-				<button @click="singleDeleteTask(task)" class="del">&times;</button>
-				<!--<button @click="$emit('singleDelete', task.id, task.title)" class="del">&times;</button>-->
+				<div>
+					<!-- Delete button with onclick delete emit command -->
+					<button @click="singleDeleteTask(task)" class="del">&times;</button>
+					<!--<button @click="$emit('singleDelete', task.id, task.title)" class="del">&times;</button>-->
+				</div>
 			</div>
 		</div>
 	</div>
@@ -30,6 +33,7 @@ export default {
 		return {
 			// This needs adjusting. 4 is the current ID but needs to be from db or something
 			editDelay: false,
+			important: this.task.pinned,
 		}
 	},
 	directives: {
@@ -40,6 +44,9 @@ export default {
 				el.focus()
 			}
 		}
+	},
+	computed: {
+		
 	},
 	methods: {
 		/* global eventBus */
@@ -83,7 +90,28 @@ export default {
 		},
 		singleDeleteTask(task) {
 			eventBus.$emit('singleDelete', task.id, task.title)
+		},
+		setImportant() {
+			//alert("blah this is important dude");
+		},
+		testme(task) {
+			this.important = !this.important
+			if (this.important) {
+				eventBus.$emit('pinTask', task.id);
+			} else {
+				eventBus.$emit('unpinTask', task.id);
+			}
 		}
+	},
+	created() {
+			
+			if (this.task.pinned) {
+				//alert(this.task.id)
+			}
+
+			/*
+			return false;
+			*/
 	}
 }
 </script>
@@ -144,6 +172,7 @@ export default {
 		height: 100%;
 		float: right;
 		border-top-left-radius: 15%;
+		margin: 0;
 	}
 	.del:hover { background: grey; }
 	input[type='checkbox'] {
@@ -185,5 +214,18 @@ export default {
 		&:focus {
 		outline: none;
 		}
+	}
+	.pin-button {
+		height: auto !important;
+		background: none;
+		border: none;
+		opacity: 0.1;
+	}
+	.pin-button:hover {
+		opacity: 0.3;
+	}
+	.pin-button.active {
+		opacity: 1;
+		color: black;
 	}
 </style>

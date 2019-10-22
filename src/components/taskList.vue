@@ -6,18 +6,21 @@
 					<todoItem v-bind:task="task" />
 				</div>
 			</transition-group>
+			<!-- Separator -->
+			<!--<div class="line" />-->
+			<!-- End Separator -->
 			<transition-group name="fade" enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
 			<div v-if="!taskList.length" v-bind:key="1" class="noTaskText"><i>No tasks</i>
 				<hr>
 				<blockquote>
-					{{getQuote[0]}}
-					<cite>{{getQuote[1]}}</cite>
+					{{ getQuote[0] }}
+					<cite>{{ getQuote[1] }}</cite>
 				</blockquote>
 			</div>
 			</transition-group>
 			
 			<div class="list-info-container">
-				<div><label><input type="checkbox" :checked="!anyRemaining" @change="checkAllTasks"> Check All</label></div>
+				<div><label v-if="taskList.length"><input type="checkbox" :checked="!anyRemaining" @change="checkAllTasks"> Check All</label></div>
 				<div>
 					<div v-if="remainingTasks">{{remainingTasks}} incomplete task</div>
 					<div v-else>All tasks complete</div>
@@ -63,6 +66,48 @@ export default {
 	},
 	props: ["taskList"],
 	computed: {
+		// This is reactive filter functionality.
+
+		// Note to self, how this is currently working:
+		/*
+			1) Filtering by task stake (all, active, complete)
+			2) Of the filtered list, create two separate "pinned" and "unpinned" task lists
+			3) Sort both lists by userOrder, aimed at giving the user ordering customisation later.
+			4) Start with the sorted pinned list and concatenate the sorted unpinned list. This way the pinned tasks appear on top.
+			5) Return the final list.
+
+			- Because it's reactive, these changes happen immediately. Not sure about performance when lists are long.
+			- Should consider splitting some of this functionality up. Example:
+				- Could let the user sort by their user choice, id, nearest due date, etc.
+				- Pinned tasks could also be in a "forced nearest deadline date" filter for the user to select. 
+		*/
+		taskListFiltered: function() {
+			
+			let mylist = "";
+			
+			// Next filter again by task state.
+			if (this.filter == 'all') {
+				mylist = this.taskList;
+			}
+			else if (this.filter == 'active') {
+				mylist = this.taskList.filter(task => !task.completed);
+			}
+			else if (this.filter == 'completed') {
+				mylist = this.taskList.filter(task => task.completed);
+			}
+
+			// Pinned and non-pinned
+			let noPinned = mylist.filter(task => !task.pinned);
+			let onlyPinned = mylist.filter(task => task.pinned);
+			
+			// Get all task objects sorted by the user preference.
+			let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.userOrder > b.userOrder) ? 1 : -1)
+			let sortedByUserOrder_noPinned = noPinned.sort((a,b) => (a.userOrder > b.userOrder) ? 1 : -1)
+
+			let final = sortedByUserOrder_pinned.concat(sortedByUserOrder_noPinned);
+			
+			return final;
+		},
 		// Reactive property for determining how many tasks remain in a list. Return false if none.
 		remainingTasks: function() {
 			let remaining = this.taskList.filter(task => !task.completed).length
@@ -77,20 +122,7 @@ export default {
 		anyRemaining: function() {
 			return this.remainingTasks!=0;
 		},
-		// Reactive property to display only certain filtered tasks to the user.		
-		taskListFiltered: function() {
-			if (this.filter == 'all') {
-				return this.taskList
-			}
-			else if (this.filter == 'active') {
-				return this.taskList.filter(task => !task.completed);
-			}
-			else if (this.filter == 'completed') {
-				return this.taskList.filter(task => task.completed);
-			}
-			
-			return false; //Default
-		},
+		
 		// Only display the clear completed button when at least one task is set to completed.
 		showClearCompleteButton() {
 			return this.taskList.filter(task => task.completed).length > 0;
@@ -126,10 +158,24 @@ export default {
 	methods: {
 		// Method to add a new task
 		addTask(newTask) {
+			// Need to get a new value for the userOrder variable. User will be able to change this, but we should set it anyway to last number+1
+			//alert(this.taskList[0].userOrder);
+			let highestNum = 0;	// Default
+			for (let x in this.taskList) {
+				if (this.taskList[x].userOrder >= highestNum) {
+					highestNum = x.userOrder
+				}
+			}
+			//alert("highest num = "+highestNum);
+			//let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.userOrder > b.userOrder) ? 1 : -1)
+			
 			this.taskList.push({
 				// Identifiers
 				id: newTask.id,
 				title: newTask.title,
+
+				// User customisation
+				userOrder: newTask.userOrder,
 
 				// Timestamp stuff
 				added: newTask.added,
@@ -138,6 +184,7 @@ export default {
 				// Flags
 				editing: newTask.editing,
 				completed: newTask.completed,
+				pinned: newTask.pinned,
 			})
 		},
 		// Method to delete a single task.
@@ -177,6 +224,16 @@ export default {
 				return false;
 			}
 		},
+		// Method to add or remove the pin flag from a task object.
+		pinTask(inputID, x) {
+			if (x == 0) {
+				this.taskList.filter(task => task.id == inputID)[0].pinned = false;
+			} else if (x == 1) {
+				this.taskList.filter(task => task.id == inputID)[0].pinned = true;
+			} else {
+				alert("Error with pinTask");
+			}
+		},
 		// Method of check all of the tasks in the list.
 		checkAllTasks() {
 			this.taskList.forEach((task) => task.completed = event.target.checked);
@@ -205,11 +262,13 @@ export default {
 		eventBus.$on('addTask', (newTask) => this.addTask(newTask));
 		eventBus.$on('checkAllTasks', () => this.checkAllTasks());
 		eventBus.$on('updateTaskTitle', (id, newTitle) => this.updateTaskTitle(id, newTitle));
+		eventBus.$on('pinTask', (id) => this.pinTask(id, 1));
+		eventBus.$on('unpinTask', (id) => this.pinTask(id, 0));
 	}
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 	@import url("https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css");
 	.list-info-container {
 		display: flex;
@@ -299,6 +358,13 @@ export default {
 	}
 	.myTask {
 		animation-duration: 0.2s;
+	}
+
+	.line {
+		height:1px;
+		width: 100%;
+		background-color: red;
+		margin: 50px 0px;
 	}
 
 </style>

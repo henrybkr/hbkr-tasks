@@ -17,7 +17,7 @@ export default {
 		return {
 			format,
 			// This needs adjusting. 4 is the current ID but needs to be from db or something
-			currentID: 2,
+			currentID: 5,
 			title: ''
 		}
 	},
@@ -42,6 +42,9 @@ export default {
 					id: this.currentID,
 					title: this.title,
 
+					// User customisation - THIS ONE MIGHT NEED CHANGING LATER
+					userOrder: this.currentID,
+
 					// Timestamp stuff
 					added: dateTime,
 					lastEdit: dateTime,
@@ -49,6 +52,7 @@ export default {
 					// Flags
 					editing: false,
 					completed: false,
+					pinned: false,
 
 				}
 				// emit to event bus
