@@ -1,3 +1,5 @@
+![Logo](https://github.com/henrybkr/hbkr-tasks/blob/master/src/assets/images/logo1_dark.svg)
+
 # hbkr-tasks
 
 This a personal project to gain an understanding of vue.js and also extend my PHP skills by making use of the Laravel framework. The end goal of this project is to be an advanced to-do list type system. It will also likely be forked for extended functionality for a potentially commercial project. Expect it to be responsive taking a mobile-first approach to styles and the inclusion of some reasonable bespoke graphics.
@@ -9,18 +11,19 @@ This a personal project to gain an understanding of vue.js and also extend my PH
 * Edit existing tasks and log time of last edit
 * Delete single tasks with confirmation
 * Clear all completed tasks easily with a single confirmation
-* Filter a list of task by all, active or completed
+* Filter a list of task by all, active or completed (also sorting by user sorted preference)
 * Track total tasks and quantity of remaining incomplete tasks
 * Basic animations
 * Display reactive random inspirational quote when task list is empty
+* Pin important task to top of the list
 
 ## Features to Implement
 * Mobile support for editing
-* Pin important task to top of the list
 * Improved styling with mobile-first style approach
 * Multiple lists per user
 * Laravel REST API implementation for storing and retrieving data
-* Basic user account authentication
+* Simple user account
+* Basic user authentication
 * (Maybe) Drag and drop list ordering
 
 
