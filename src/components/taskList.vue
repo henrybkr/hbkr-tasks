@@ -46,8 +46,12 @@
 
 <script>
 import { compareAsc, format } from 'date-fns'
+import axios from 'axios';
 
 import todoItem from './todoItem.vue';
+
+// This will need changing once online. Currently in dev mode
+axios.defaults.baseURL = "http://localhost:8000/api"
 
 export default {
 	name: "taskList",
@@ -161,31 +165,56 @@ export default {
 			// Need to get a new value for the userOrder variable. User will be able to change this, but we should set it anyway to last number+1
 			//alert(this.taskList[0].userOrder);
 			let highestNum = 0;	// Default
+			//alert(this.taskList.length)
 			for (let x in this.taskList) {
-				if (this.taskList[x].userOrder >= highestNum) {
-					highestNum = x.userOrder
+				//alert(this.taskList[x].user_order);
+				if (this.taskList[x].user_order > highestNum) {
+					//alert(this.taskList[x].user_order+" > "+highestNum);
+					highestNum = this.taskList[x].user_order
 				}
 			}
 			//alert("highest num = "+highestNum);
 			//let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.userOrder > b.userOrder) ? 1 : -1)
 			
-			this.taskList.push({
-				// Identifiers
-				id: newTask.id,
+			
+			
+			axios.post('/tasks', {
 				title: newTask.title,
-
-				// User customisation
-				userOrder: newTask.userOrder,
-
-				// Timestamp stuff
-				added: newTask.added,
-				lastEdit: newTask.lastEdit,
-
-				// Flags
-				editing: newTask.editing,
 				completed: newTask.completed,
 				pinned: newTask.pinned,
+				user_order: highestNum+1,
+
 			})
+				.then(response => {
+					//console.log(response.data);
+					
+					//this.taskList = response.data;
+					// If successful api post, update locally too
+					if (response.status == 201) {
+						//console.log(response);
+						this.taskList.push({
+							// Identifiers
+							id: response.data.id,
+							title: response.data.title,
+
+							// User customisation
+							userOrder: response.data.user_order,
+
+							// Timestamp stuff
+							added: response.data.created_at,
+							lastEdit: response.data.updated_at,
+
+							// Flags
+							editing: newTask.editing,
+							completed: response.data.completed,
+							pinned: response.data.pinned,
+						})
+					}
+				})
+				.catch(error => {
+					console.log(error);
+				})
+				
 		},
 		// Method to delete a single task.
 		// note: mustConfirm, the first input defines whether the user is warned about the delete.
@@ -198,10 +227,21 @@ export default {
 			
 			// Double check can continue
 			if (conf == true) {
-				//this.taskList.splice(index, 1) //Note to self, this SHOULD work, but has some weird effects. For example, deleting from a list of three starting with two, then going to delete 3 outputs an error.
-				//this.taskList.splice(task => task.id === index, 1) // Similar to above. Deleting two first (success), then deleting three seems to delete one instead. Odd.
-				// Gone with a filter route for now until performance becomes a concern. See above comments.
-				this.taskList = this.taskList.filter(task => task.id !== index)
+				// Once confirmed, send the api delete request
+				axios.delete('/tasks/' + index)
+					.then(response => {
+						if (response.status == 200) {
+							// Confirms successfully removed from the database, now mutate the current list on the page
+
+							//this.taskList.splice(index, 1) //Note to self, this SHOULD work, but has some weird effects. For example, deleting from a list of three starting with two, then going to delete 3 outputs an error.
+							//this.taskList.splice(task => task.id === index, 1) // Similar to above. Deleting two first (success), then deleting three seems to delete one instead. Odd.
+							// Gone with a filter route for now until performance becomes a concern. See above comments.
+							this.taskList = this.taskList.filter(task => task.id !== index)
+						}
+					})
+					.catch(error => {
+						console.log(error);
+					})
 			}
 		},
 		// Method to clear checked items from the list. Filters the list for checked tasks and loops through them.

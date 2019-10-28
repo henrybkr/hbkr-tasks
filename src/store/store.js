@@ -3,6 +3,8 @@ import Vuex from 'vuex'
 
 Vue.use(Vuex)
 
+// Note to self, not currently using vuex.
+
 export const store = new Vuex.Store({
     state: {
         taskList: [

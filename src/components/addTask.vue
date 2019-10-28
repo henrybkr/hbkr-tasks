@@ -10,6 +10,7 @@
 
 <script>
 import { format } from 'date-fns'
+
 // import uuid from 'uuid';
 export default {
 	name: "AddTask",
@@ -17,7 +18,7 @@ export default {
 		return {
 			format,
 			// This needs adjusting. 4 is the current ID but needs to be from db or something
-			currentID: 5,
+			//currentID: 5,
 			title: ''
 		}
 	},
@@ -39,11 +40,11 @@ export default {
 				const newTask = {
 
 					// Identifiers
-					id: this.currentID,
+					//id: this.currentID,
 					title: this.title,
 
 					// User customisation - THIS ONE MIGHT NEED CHANGING LATER
-					userOrder: this.currentID,
+					//userOrder: this.currentID,
 
 					// Timestamp stuff
 					added: dateTime,

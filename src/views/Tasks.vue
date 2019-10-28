@@ -9,7 +9,10 @@
 import taskList from '../components/taskList';
 import AddTask from '../components/addTask';
 
-//import axios from 'axios';
+import axios from 'axios';
+
+// This will need changing once online. Currently in dev mode
+axios.defaults.baseURL = "http://localhost:8000/api"
 
 /* eslint-disable */
 
@@ -22,66 +25,23 @@ export default {
   data() {
     return {
       // Empty array for now
-      taskList: [
-        {
-          'id': 0,
-          'title': "This is the first example task!",
-          'completed': false,
-          'editing': false,
-          'added': "2017-01-01-10-00-00",
-          'lastEdit': "2017-01-01-10-00-00",
-          'pinned': false,
-          'userOrder': 2,
-        },
-        {
-          'id': 1,
-          'title': "And this is the second example task which is completed.",
-          'completed': true,
-          'editing': false,
-          'added': "2018-01-01-10-00-00",
-          'lastEdit': "2018-01-01-10-00-00",
-          'pinned': true,
-          'userOrder': 1,
-        },
-        {
-          'id': 2,
-          'title': "Woah, this is a third example!",
-          'completed': false,
-          'editing': false,
-          'added': "2016-01-01-10-00-00",
-          'lastEdit': "2016-01-01-10-00-00",
-          'pinned': false,
-          'userOrder': 3,
-        },
-        {
-          'id': 3,
-          'title': "Number four",
-          'completed': false,
-          'editing': false,
-          'added': "2016-01-01-10-00-00",
-          'lastEdit': "2016-01-01-10-00-00",
-          'pinned': false,
-          'userOrder': 4,
-        },
-        {
-          'id': 4,
-          'title': "Task num 5 yo!",
-          'completed': false,
-          'editing': false,
-          'added': "2016-01-01-10-00-00",
-          'lastEdit': "2016-01-01-10-00-00",
-          'pinned': true,
-          'userOrder': 0,
-        },
-      ]
+      taskList: []
     }
   },
   methods: {
     // Not currently used. Probably shouldn't be running too many methods in the view.
   },
   created() {
-    // When created, do something?
-    
+    // When created, collect all tasks in the database.
+    axios.get('/tasks')
+      .then(response => {
+        //console.log(response.data);
+        
+        this.taskList = response.data;
+      })
+      .catch(error => {
+        console.log(error);
+      })
   }
 }
 </script>
