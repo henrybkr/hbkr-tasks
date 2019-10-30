@@ -7,11 +7,11 @@
 				<div v-if="!task.editing" @dblclick="editMode(task)" class="todo-item-label"><p>{{task.title}}</p></div>
 				<input v-else class="todo-item-edit" @blur="editComplete(task)" @keyup.enter="editComplete(task)" @keyup.esc="editCancel(task)" v-focus type="text"  v-model="task.title">
 			</div>
-			<button :class="{ active: important == true }" @click="testme(task)" class="pin-button myAnimation" ><font-awesome-icon icon="bookmark" /></button>
+			<button :class="{ active: important == true }" @click="pinTask(task)" class="pin-button myAnimation" ><font-awesome-icon icon="bookmark" /></button>
 			<div class="todo-del">
 				<div>
 					<!-- Delete button with onclick delete emit command -->
-					<button @click="singleDeleteTask(task)" class="del">&times;</button>
+					<button @click="singleDeleteTask(true, task)" class="del">&times;</button>
 					<!--<button @click="$emit('singleDelete', task.id, task.title)" class="del">&times;</button>-->
 				</div>
 			</div>
@@ -50,11 +50,6 @@ export default {
 	},
 	methods: {
 		/* global eventBus */
-		
-		/*
-		markComplete() {
-			this.task.completed = !this.task.completed;
-		},*/
 		editMode(task) {
 			this.beforeEditCache = task.title;	// Store the original string in case user cancels
 			task.editing = true;
@@ -63,24 +58,41 @@ export default {
 			// Once the user has confirmed their edit, run a few checks before accepting the new input.
 
 			// Create a delay for this function. This prevent multiple launch of it within 200ms.
-			if (!this.editDelay) {
+			if (this.editDelay == false) {
 				// Enable the delay.
-				this.editDelay = true;
-				// Reset delay flag after 200ms.
-				setTimeout(function() { this.editDelay = false; }, 200);
+				this.editDelay = true;				
 
-				// Now let's look at the edit.
+				// Reset delay flag after 200ms. Had to bind this because this isn't preserved in setTimeout.
+				setTimeout(function() {
+					this.editDelay = false;
+				}.bind(this), 200);
+
+				// Now let's look at the edit...
 
 				// If the new edit is a empty string, cancel and return to old task title.
 				// Opportunity for improvement here. Perhaps ask the user if they want to delete it instead?
-				if (task.title.trim().length == 0) {
-					task.title = this.beforeEditCache;
+				
+				// If the entered title is the same as before, do nothing, no need for an emit.
+				if (task.title == this.beforeEditCache) {
+					// nope, don't need to do anything.
 				}
-				else if (task.title != this.beforeEditCache) {
-					// If the entered title is the same as before, do nothing, no need for an emit.
-					eventBus.$emit('updateTaskTitle', task.id, task.title);
+				else if (task.title.trim().length == 0) {
+					let conf = confirm("Please confirm you'd like to delete the following task:\nID: "+task.id+"\nTitle: "+this.beforeEditCache);
+					if (conf == true) {
+						this.singleDeleteTask(false, task)
+					}
+					else {
+						// If user doesn't confirm deletion, return to previous state. Don't allow whitespace-only
+						task.title = this.beforeEditCache;
+					}
+				}
+				else {
+					// Confirmed we can make the update
+					eventBus.$emit('updateTaskTitle', task, task.title);
 				}
 			}
+			// Only commit to the emit (lol) if has been confirmed.
+			// Always set the edit flag back to false.
 			task.editing = false;
 			
 		},
@@ -88,18 +100,15 @@ export default {
 			task.title = this.beforeEditCache;
 			task.editing = false;
 		},
-		singleDeleteTask(task) {
-			eventBus.$emit('singleDelete', task.id, task.title)
+		singleDeleteTask(confirm, task) {
+			eventBus.$emit('singleDelete', confirm, task.id, task.title)
 		},
-		setImportant() {
-			//alert("blah this is important dude");
-		},
-		testme(task) {
+		pinTask(task) {
 			this.important = !this.important
 			if (this.important) {
-				eventBus.$emit('pinTask', task.id);
+				eventBus.$emit('pinTask', task);
 			} else {
-				eventBus.$emit('unpinTask', task.id);
+				eventBus.$emit('unpinTask', task);
 			}
 		}
 	},

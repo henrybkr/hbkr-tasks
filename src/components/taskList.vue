@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div class="container">
-			<b-button class="d-none mt-2 mb-2" variant="success" @click="test()">test me</b-button>
+			<b-button class="mt-2 mb-2" variant="success" @click="test()">test me</b-button>
 			<transition-group name="fade" enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
 				<div class="myTask" v-bind:key="task.id" v-for="task in taskListFiltered">
 					<todoItem v-bind:task="task" />
@@ -87,7 +87,7 @@ export default {
 				- Pinned tasks could also be in a "forced nearest deadline date" filter for the user to select. 
 		*/
 		taskListFiltered: function() {
-			
+			console.log("list is modified, updating...")
 			let mylist = "";
 			
 			// Next filter again by task state.
@@ -163,7 +163,7 @@ export default {
 	methods: {
 		test() {
 			for (var x in this.taskList) {
-				console.log(this.taskList[x].user_order);
+				console.log(this.taskList[x].pinned);
 			}
 			
 		},
@@ -255,7 +255,7 @@ export default {
 					if (conf == true) {
 						//this.updateList(x);
 						for (let num in toDelete)
-							this.deleteTask(false, toDelete[num].id, toDelete[num].title); // Disable additional confirmation about deleting. Already asked.
+							this.deleteTask(true, toDelete[num].id, toDelete[num].title); // Disable additional confirmation about deleting. Already asked.
 						return true;
 					}
 			} catch (error) {
@@ -264,14 +264,49 @@ export default {
 			}
 		},
 		// Method to add or remove the pin flag from a task object.
-		pinTask(inputID, x) {
-			if (x == 0) {
+		pinTask(currentTask, isPinned) {
+			axios.patch('/tasks/'+currentTask.id, {
+				title: currentTask.title,
+				completed: currentTask.completed,
+				pinned: isPinned,					// <-- The part we're updating
+				user_order: currentTask.user_order,
+			})
+				.then(response => {
+					if (response.status == 200) {
+						console.log("--before--")
+						console.log(this.taskList.filter(task => task.id == currentTask.id)[0].pinned)
+						this.taskList.filter(task => task.id == currentTask.id)[0] = ({
+							// Identifiers
+							id: response.data.id,
+							title: response.data.title,
+							// User customisation
+							user_order: response.data.user_order,
+							// Timestamp stuff
+							added: response.data.created_at,
+							lastEdit: response.data.updated_at,
+							// Flags
+							editing: currentTask.editing,
+							completed: response.data.completed,
+							pinned: isPinned,
+						})
+						console.log("--after--")
+						console.log(this.taskList.filter(task => task.id == currentTask.id)[0].pinned)
+					}
+				})
+				.catch(error => {
+					console.log(error);
+				})
+
+			/*
+
+			if (isPinned == 0) {
 				this.taskList.filter(task => task.id == inputID)[0].pinned = false;
 			} else if (x == 1) {
 				this.taskList.filter(task => task.id == inputID)[0].pinned = true;
 			} else {
 				alert("Error with pinTask");
 			}
+			*/
 		},
 		// Method of check all of the tasks in the list.
 		checkAllTasks() {
@@ -282,27 +317,61 @@ export default {
 			this.taskList = newList;
 		},
 
-		updateTaskTitle(inputID, newTitle) {
+		updateTaskTitle(currentTask, newTitle) {
 
 			// Only continue if a single result is found for the filtered task.
-
-			if (this.taskList.filter(task => task.id !== inputID).length == 1) {
-				// Update the task to the new title and update the last edit time.
-				this.taskList.filter(task => task.id === inputID)[0].title = newTitle;
-				this.taskList.filter(task => task.id === inputID)[0].lastEdit = format(new Date(), 'yyyy-MM-dd-hh-mm-ss');
-			}
+			
+			axios.patch('/tasks/'+currentTask.id, {
+				title: newTitle,
+				completed: currentTask.completed,
+				pinned: currentTask.pinned,
+				user_order: currentTask.user_order,
+			})
+				.then(response => {
+					//console.log("response:")
+					//console.log(response.data);
+					
+					//this.taskList = response.data;
+					// If successful api post, update locally too (thinking this would be better instead of fetching full list again)
+					if (response.status == 200) {
+						//console.log(response);
+						this.taskList.filter(task => task.id == currentTask.id)[0] = ({
+							// Identifiers
+							id: response.data.id,
+							title: response.data.title,
+							// User customisation
+							user_order: response.data.user_order,
+							// Timestamp stuff
+							added: response.data.created_at,
+							lastEdit: response.data.updated_at,
+							// Flags
+							editing: currentTask.editing,
+							completed: response.data.completed,
+							pinned: response.data.pinned,
+						})
+					}
+				})
+				.catch(error => {
+					console.log(error);
+				})
+				
+			// Update the task to the new title and update the last edit time.
+			//this.taskList.filter(task => task.id === inputID)[0].title = newTitle;
+			//this.taskList.filter(task => task.id === inputID)[0].lastEdit = format(new Date(), 'yyyy-MM-dd-hh-mm-ss');
+				
+			
 		}
 	},
 	created() {
 		/* global eventBus */
 
 		// Event listeners to fire immediately.
-		eventBus.$on('singleDelete', (id, title) => this.deleteTask(true, id, title));	// enable the flag that ensures user confirms.
+		eventBus.$on('singleDelete', (confirm, id, title) => this.deleteTask(confirm, id, title));	// enable the flag that ensures user confirms.
 		eventBus.$on('addTask', (newTask) => this.addTask(newTask));
 		eventBus.$on('checkAllTasks', () => this.checkAllTasks());
-		eventBus.$on('updateTaskTitle', (id, newTitle) => this.updateTaskTitle(id, newTitle));
-		eventBus.$on('pinTask', (id) => this.pinTask(id, 1));
-		eventBus.$on('unpinTask', (id) => this.pinTask(id, 0));
+		eventBus.$on('updateTaskTitle', (theTask, newTitle) => this.updateTaskTitle(theTask, newTitle));
+		eventBus.$on('pinTask', (theTask) => this.pinTask(theTask, true));
+		eventBus.$on('unpinTask', (theTask) => this.pinTask(theTask, false));
 	}
 }
 </script>

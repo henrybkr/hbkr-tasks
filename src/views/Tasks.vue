@@ -78,6 +78,12 @@ export default {
 				this.errorInfo.message = "Success!"
 			}
 			this.displayLoading = false;
+
+			// A (probably bad) fix for no longer having a default 'editing' property. This is a property we don't store in the database.
+			for (let x in response.data) {
+				response.data[x].editing = false;
+			}
+
 			this.taskList = response.data;
       	})
 		.catch(error => {
