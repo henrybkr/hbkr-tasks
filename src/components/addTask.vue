@@ -35,16 +35,12 @@ export default {
 			}
 			else {
 				let dateTime = format(new Date(), 'yyyy-MM-dd-hh-mm-ss')
-				//alert(dateTime);
-
 				const newTask = {
 
 					// Identifiers
-					//id: this.currentID,
+					// (ID is auto increment in laravel api)
 					title: this.title,
-
-					// User customisation - THIS ONE MIGHT NEED CHANGING LATER
-					//userOrder: this.currentID,
+					// User order is defined by the taskList component, not here.
 
 					// Timestamp stuff
 					added: dateTime,
@@ -54,7 +50,6 @@ export default {
 					editing: false,
 					completed: false,
 					pinned: false,
-
 				}
 				// emit to event bus
 				eventBus.$emit('addTask', newTask);

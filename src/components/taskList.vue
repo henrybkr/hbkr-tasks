@@ -1,6 +1,7 @@
 <template>
 	<div>
 		<div class="container">
+			<b-button class="d-none mt-2 mb-2" variant="success" @click="test()">test me</b-button>
 			<transition-group name="fade" enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
 				<div class="myTask" v-bind:key="task.id" v-for="task in taskListFiltered">
 					<todoItem v-bind:task="task" />
@@ -76,7 +77,7 @@ export default {
 		/*
 			1) Filtering by task stake (all, active, complete)
 			2) Of the filtered list, create two separate "pinned" and "unpinned" task lists
-			3) Sort both lists by userOrder, aimed at giving the user ordering customisation later.
+			3) Sort both lists by user_order, aimed at giving the user ordering customisation later.
 			4) Start with the sorted pinned list and concatenate the sorted unpinned list. This way the pinned tasks appear on top.
 			5) Return the final list.
 
@@ -105,8 +106,8 @@ export default {
 			let onlyPinned = mylist.filter(task => task.pinned);
 			
 			// Get all task objects sorted by the user preference.
-			let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.userOrder > b.userOrder) ? 1 : -1)
-			let sortedByUserOrder_noPinned = noPinned.sort((a,b) => (a.userOrder > b.userOrder) ? 1 : -1)
+			let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.user_order > b.user_order) ? 1 : -1)
+			let sortedByUserOrder_noPinned = noPinned.sort((a,b) => (a.user_order > b.user_order) ? 1 : -1)
 
 			let final = sortedByUserOrder_pinned.concat(sortedByUserOrder_noPinned);
 			
@@ -160,50 +161,49 @@ export default {
 		}
 	},
 	methods: {
+		test() {
+			for (var x in this.taskList) {
+				console.log(this.taskList[x].user_order);
+			}
+			
+		},
 		// Method to add a new task
 		addTask(newTask) {
-			// Need to get a new value for the userOrder variable. User will be able to change this, but we should set it anyway to last number+1
-			//alert(this.taskList[0].userOrder);
+			// Need to get a new value for the user_order variable. User will be able to change this, but we should set it anyway to last number+1
+			//alert(this.taskList[0].user_order);
+
 			let highestNum = 0;	// Default
-			//alert(this.taskList.length)
 			for (let x in this.taskList) {
 				//alert(this.taskList[x].user_order);
-				if (this.taskList[x].user_order > highestNum) {
+				//alert(this.taskList[x].user_order);
+				if (this.taskList[x].user_order >= highestNum) {
 					//alert(this.taskList[x].user_order+" > "+highestNum);
 					highestNum = this.taskList[x].user_order
 				}
 			}
-			//alert("highest num = "+highestNum);
-			//let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.userOrder > b.userOrder) ? 1 : -1)
-			
-			
-			
 			axios.post('/tasks', {
 				title: newTask.title,
 				completed: newTask.completed,
 				pinned: newTask.pinned,
 				user_order: highestNum+1,
-
 			})
 				.then(response => {
+					//console.log("response:")
 					//console.log(response.data);
 					
 					//this.taskList = response.data;
-					// If successful api post, update locally too
+					// If successful api post, update locally too (thinking this would be better instead of fetching full list again)
 					if (response.status == 201) {
 						//console.log(response);
 						this.taskList.push({
 							// Identifiers
 							id: response.data.id,
 							title: response.data.title,
-
 							// User customisation
-							userOrder: response.data.user_order,
-
+							user_order: response.data.user_order,
 							// Timestamp stuff
 							added: response.data.created_at,
 							lastEdit: response.data.updated_at,
-
 							// Flags
 							editing: newTask.editing,
 							completed: response.data.completed,
@@ -214,7 +214,6 @@ export default {
 				.catch(error => {
 					console.log(error);
 				})
-				
 		},
 		// Method to delete a single task.
 		// note: mustConfirm, the first input defines whether the user is warned about the delete.
