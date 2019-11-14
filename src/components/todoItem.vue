@@ -3,7 +3,7 @@
 	<div class="todo-item" :key="task.id" v-bind:class="{'is-complete':task.completed}">
 		<div class="todo-space clearfix">
 			<div class="todo-content">
-				<input type="checkbox" v-model="task.completed">
+				<input type="checkbox" v-model="task.completed" @change="markCompleted(task)">
 				<div v-if="!task.editing" @dblclick="editMode(task)" class="todo-item-label"><p>{{task.title}}</p></div>
 				<input v-else class="todo-item-edit" @blur="editComplete(task)" @keyup.enter="editComplete(task)" @keyup.esc="editCancel(task)" v-focus type="text"  v-model="task.title">
 			</div>
@@ -104,12 +104,19 @@ export default {
 			eventBus.$emit('singleDelete', confirm, task.id, task.title)
 		},
 		pinTask(task) {
-			this.important = !this.important
+			// Update the local component flag for the task being pinned.
+			this.important = !this.important;
+
+			// Now commit an event for the task being pinned or unpinned.
 			if (this.important) {
 				eventBus.$emit('pinTask', task);
 			} else {
 				eventBus.$emit('unpinTask', task);
 			}
+		},
+		markCompleted(task) {
+			//alert(state)
+			eventBus.$emit('updateTaskStatus', task);
 		}
 	},
 	created() {

@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<div class="container">
-			<b-button class="mt-2 mb-2" variant="success" @click="test()">test me</b-button>
+			<b-button class="mt-2 mb-2 d-none" variant="success" @click="test()">test me</b-button>
 			<transition-group name="fade" enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
 				<div class="myTask" v-bind:key="task.id" v-for="task in taskListFiltered">
 					<todoItem v-bind:task="task" />
@@ -87,7 +87,7 @@ export default {
 				- Pinned tasks could also be in a "forced nearest deadline date" filter for the user to select. 
 		*/
 		taskListFiltered: function() {
-			console.log("list is modified, updating...")
+			//console.log("list is modified, updating...")
 			let mylist = "";
 			
 			// Next filter again by task state.
@@ -162,10 +162,39 @@ export default {
 	},
 	methods: {
 		test() {
+			/*
 			for (var x in this.taskList) {
 				console.log(this.taskList[x].pinned);
 			}
-			
+			*/
+			/*
+			//Fizzbuzz challenge
+			var numbers=20;
+			for (let x = 1; x != numbers; x++) {
+				let fizz, buzz = false;
+				//Fizz first, multiples of 3.
+				if (Number.isInteger(x/3)) {
+					fizz = true;
+				}
+				if (Number.isInteger(x/5)) {
+					buzz = true;
+				}
+				// Output to log
+				if (fizz && buzz) {
+					console.log("Fizzbuzz!");
+				}
+				else if (fizz && !buzz) {
+					console.log("Fizz");
+				}
+				else if (!fizz && buzz) {
+					console.log("Buzz");
+				}
+				else {
+					// default
+					console.log(x);
+				}
+			}
+			*/
 		},
 		// Method to add a new task
 		addTask(newTask) {
@@ -273,24 +302,11 @@ export default {
 			})
 				.then(response => {
 					if (response.status == 200) {
-						console.log("--before--")
-						console.log(this.taskList.filter(task => task.id == currentTask.id)[0].pinned)
-						this.taskList.filter(task => task.id == currentTask.id)[0] = ({
-							// Identifiers
-							id: response.data.id,
-							title: response.data.title,
-							// User customisation
-							user_order: response.data.user_order,
-							// Timestamp stuff
-							added: response.data.created_at,
-							lastEdit: response.data.updated_at,
-							// Flags
-							editing: currentTask.editing,
-							completed: response.data.completed,
-							pinned: isPinned,
-						})
-						console.log("--after--")
-						console.log(this.taskList.filter(task => task.id == currentTask.id)[0].pinned)
+						
+						// Update the (local) task pinned flag (meaning we don't have to pull the entire list again)
+						this.taskList.filter(task => task.id == currentTask.id)[0].pinned = response.data.pinned;
+
+						//this.taskList = this.taskList;
 					}
 				})
 				.catch(error => {
@@ -310,11 +326,52 @@ export default {
 		},
 		// Method of check all of the tasks in the list.
 		checkAllTasks() {
-			this.taskList.forEach((task) => task.completed = event.target.checked);
+			// Update local complete status and then forward the api update command for each task one at a time.
+			this.taskList.forEach((task) => {
+				task.completed = event.target.checked;
+				this.singleTaskStatusUpdate(task);
+			})
+
 		},
 		// Simply updates the current list of tasks with the given new list.
 		updateList(newList) {
 			this.taskList = newList;
+		},
+
+		singleTaskStatusUpdate(currentTask) {
+			axios.patch('/tasks/'+currentTask.id, {
+				title: currentTask.title,
+				completed: currentTask.completed,
+				pinned: currentTask.pinned,
+				user_order: currentTask.user_order,
+			})
+				.then(response => {
+					//console.log("response:")
+					//console.log(response.data);
+					
+					//this.taskList = response.data;
+					// If successful api post, update locally too (thinking this would be better instead of fetching full list again)
+					if (response.status == 200) {
+						//console.log(response);
+						this.taskList.filter(task => task.id == currentTask.id)[0] = ({
+							// Identifiers
+							id: response.data.id,
+							title: response.data.title,
+							// User customisation
+							user_order: response.data.user_order,
+							// Timestamp stuff
+							added: response.data.created_at,
+							lastEdit: response.data.updated_at,
+							// Flags
+							editing: currentTask.editing,
+							completed: response.data.completed,
+							pinned: response.data.pinned,
+						})
+					}
+				})
+				.catch(error => {
+					console.log(error);
+				})
 		},
 
 		updateTaskTitle(currentTask, newTitle) {
@@ -370,8 +427,10 @@ export default {
 		eventBus.$on('addTask', (newTask) => this.addTask(newTask));
 		eventBus.$on('checkAllTasks', () => this.checkAllTasks());
 		eventBus.$on('updateTaskTitle', (theTask, newTitle) => this.updateTaskTitle(theTask, newTitle));
-		eventBus.$on('pinTask', (theTask) => this.pinTask(theTask, true));
-		eventBus.$on('unpinTask', (theTask) => this.pinTask(theTask, false));
+		eventBus.$on('updateTaskStatus', (theTask) => this.singleTaskStatusUpdate(theTask));
+		eventBus.$on('pinTask', (theTask) => this.pinTask(theTask, 1));
+		eventBus.$on('unpinTask', (theTask) => this.pinTask(theTask, 0));
+
 	}
 }
 </script>
