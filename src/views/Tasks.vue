@@ -9,7 +9,7 @@
 	<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
 	<div class="errorSpace mt-5" v-if="displayLoading" v-bind:key="20">
 		<div class="container text-center">
-		  <img class="mr-2" src="~@/assets/images/loading.gif" height="20" width="20"/><i>Please wait, attempting to find your tasks!</i>
+			<img class="mr-2" src="~@/assets/images/loading.gif" height="20" width="20"/><i>Please wait, attempting to find your tasks!</i>
 		</div>
 	</div>
 	
