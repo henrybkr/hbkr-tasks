@@ -12,9 +12,14 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBookmark } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { fab } from '@fortawesome/free-brands-svg-icons'
 
-library.add(faBookmark)
+library.add(fab, faBookmark)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
+
+//
+
+//
 
 // Event bus
 window.eventBus = new Vue();
