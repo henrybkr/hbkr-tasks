@@ -1,4 +1,4 @@
-<p align="center"><img src="https://github.com/henrybkr/hbkr-tasks/blob/master/src/assets/images/logo1_dark.svg" width="300"></p>
+<p align="center"><img src="https://github.com/henrybkr/hbkr-tasks/blob/master/src/assets/images/logo1_dark.svg" width="250"></p>
 
 # hbkr-tasks
 
