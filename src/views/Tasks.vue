@@ -31,25 +31,7 @@
 		</div>
 	</div>
 	</transition-group>
-	<div class="container mt-5">
-		<hr class="my-4">
-		<p>Vue-Slicksort Testing space:</p>
-		<div class="root1">
-			<SlickList :lockToContainerEdges="true" axis="x" lockAxis="x" v-model="items" class="SortableList row" @input="getChangeLists">
-				<SlickItem v-for="(item, index) in items" class="SortableItem col-4" :index="index" :key="index">
-					<div class="itemheader">{{ item.name }}</div>
-					
-					<div class="root2">
-						<SlickList :lockToContainerEdges="true" class="list" v-model="item.itemArr" helperClass="stylizedHelper">
-							<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
-								<span>{{ item }}</span>
-							</SlickItem>
-						</SlickList>
-					</div>
-				</SlickItem>
-			</SlickList>
-		</div>
-	</div>
+	
   </div>
 </template>
 
@@ -58,8 +40,6 @@ import taskList from '../components/taskList';
 import AddTask from '../components/addTask';
 
 import axios from 'axios';
-
-import { SlickList, SlickItem } from 'vue-slicksort'
 
 // This will need changing once online. Currently in dev mode
 axios.defaults.baseURL = "http://localhost:8000/api"
@@ -72,48 +52,26 @@ export default {
 	taskList,
 	AddTask,
 
-	// Testing purposes
-	SlickItem,
-	SlickList,
-
   },
   data() {
 	return {
-	  taskList: [],                   		// Empty array for now
-	  errorInfo: [
+		taskList: [],                   		// Empty array for now
+		errorInfo: [
 			{ code: 0 },
 			{ message: "No response" },   	// Default values, which will fail to display lists
-	  ],
-	  displayError: false,
-	  displayLoading: true,
-	  
-	  // Testing purposes
-	  flag: true,
-	  items: [
-		{
-		  name: 'Shopping List',
-		  itemArr: ['New Desktop PC', 'Updated Smartphone', 'Noise cancellation headphones', 'Example text that should be too long to fit on a single line but lets make it extra long anyway']
-		},
-		{
-		  name: 'Movies to watch',
-		  itemArr: ['Inception', 'King Kong']
-		},
-		{
-		  name: 'TV shows to watch',
-		  itemArr: ['Breaking Bad', 'Narcos', '30 Rock', 'The Simpsons', 'Game of Thrones']
-		}
-	  ]
-
+		],
+		displayError: false,
+		displayLoading: true,
+		
+		// Testing purposes
+		flag: true,
 	}
+  },
+  computed: {
+	  
   },
   // Testing purposes methods
   methods: {
-	  getChangeList (val) {
-	  console.log(val, 'val')
-	},
-	getChangeLists (vals) {
-	  console.log(vals, 'vals')
-	}
 	// Not currently used. Probably shouldn't be running too many methods in the view.
   },
   created() {
@@ -175,81 +133,6 @@ body {
 	background: #666;
 }
 
-.root1 {
-	width: 100%;
-	display: flex;
-	height: 100%;
-	box-sizing: border-box;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	background: #333;
-}
 
-.root2 {
-	display: flex;
-	height: 100%;
-}
-
-.list {
-	max-height: 80vh;
-	width: 100%;
-	margin: 0 auto;
-	padding: 0;
-	overflow: auto;
-	//background-color: #f3f3f3;
-	//border: 1px solid #efefef;
-	border-radius: 3;
-}
-
-.list-item {
-	display: flex;
-	align-items: center;
-	width: 100%;
-	padding: 20px;
-	background-color: rgb(250, 250, 250);
-	border-bottom: 1px solid #efefef;
-	box-sizing: border-box;
-	user-select: none;
-	color: #333;
-	font-weight: 400;
-}
-
-.stylizedHelper {
-	background-color: #fbfbfb;
-}
-
-.SortableList {
-	display: flex;
-	width: 100%;
-	white-space: nowrap;
-	max-height: 80vh;
-	margin: 0 auto;
-	padding: 0;
-	overflow: auto;
-	background-color: #f3f3f3;
-	border: 1px solid #efefef;
-	border-radius: 3;
-}
-
-.SortableItem {
-	display: inline;
-	align-items: center;
-	padding: 10px;
-	background-color: #fff;
-	border-bottom: 1px solid #efefef;
-	box-sizing: border-box;
-	user-select: none;
-	color: #333;
-	font-weight: 400;
-	overflow: hidden;
-}
-
-.itemheader {
-	width: 100%;
-	padding: 10px;
-	margin-bottom: 10px;
-	font-weight: bold;
-}
 
 </style>

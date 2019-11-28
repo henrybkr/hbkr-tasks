@@ -1,7 +1,37 @@
 <template>
 	<div>
 		<div class="container">
-			<b-button class="mt-2 mb-2 d-none" variant="success" @click="test()">test me</b-button>
+
+			<b-button class="mt-2 mb-2" variant="success" @click="test()">test me</b-button> <!-- Button, currently hidden, typically used for testing a function.-->
+
+			<!-- -------------------------------- -->
+
+			<div class="container mt-5 mb-5">
+				<hr class="my-4">
+				<b-button class="mt-2 mb-2" variant="" @click="listReorderSwitch()"><font-awesome-icon class="mr-2" :icon="[ 'fas', 'arrows-alt' ]" height="30px"/>Unlock/Lock</b-button> 
+				<hr class="my-4">
+				<p>Vue-Slicksort Testing space:</p>
+				<div class="root1">
+					<SlickList :lockToContainerEdges="true" axis="x" lockAxis="x" v-model="orderedUserTaskLists" class="SortableList row" @input="getChangeLists">
+						<SlickItem v-for="(item, index) in userListArray" class="SortableItem col-4" :index="index" :key="index">
+							<div class="itemheader">{{ item.name }} -- order: {{ item.listOrder }}</div>
+							
+							<div class="root2">
+								<SlickList :lockToContainerEdges="true" class="list" v-model="item.itemArr" helperClass="stylizedHelper" useDragHandle>
+									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
+										<span v-if="moveTaskLock" v-handle class="handle"></span><span>{{ item.order }} -- {{ item.title }}</span>
+									</SlickItem>
+								</SlickList>
+							</div>
+							
+							
+						</SlickItem>
+					</SlickList>
+				</div>
+			</div>
+
+			<!-- -------------------------------- -->
+			
 			<transition-group name="fade" enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
 				<div class="myTask" v-bind:key="task.id" v-for="task in taskListFiltered">
 					<todoItem v-bind:task="task" />
@@ -41,6 +71,10 @@
 					</transition>
 				</div>
 			</div>
+
+			<!-- ------------------------------ -->
+
+			
 		</div>
 	</div>
 </template>
@@ -50,12 +84,18 @@ import { compareAsc, format } from 'date-fns'
 import axios from 'axios';
 
 import todoItem from './todoItem.vue';
+import { SlickList, SlickItem, HandleDirective } from 'vue-slicksort'
 
 // This will need changing once online. Currently in dev mode
 axios.defaults.baseURL = "http://localhost:8000/api"
 
+
+//var SlickItem = require('SlickItem')
+//var SlickList = require('SlickList')
+
 export default {
 	name: "taskList",
+	directives: { handle: HandleDirective },
 	data () {
 		return {
 			// Imports
@@ -64,20 +104,118 @@ export default {
 			// temporary cache for the edit, to remember what it was before changing it
 			beforeEditCache: '',
 			filter: 'all',
+			moveTaskLock: true,
+			randomListData: [
+				{
+					listOrder: 0,
+					name: 'Shopping List',
+					itemArr: [
+						{
+							order: 0,
+							title: 'New Desktop PC'
+						},
+						{
+							order: 1,
+							title: 'Updated Smartphone'
+						},
+						{
+							order: 2,
+							title: 'HQ headphones'
+						}
+					]
+				},
+				{
+					listOrder: 2,
+					name: 'Movies to watch',
+					itemArr: [
+						{
+							order: 0,
+							title: 'Inception'
+						},
+						{
+							order: 1,
+							title: 'King Kong'
+						},
+					]
+				},
+				{
+					listOrder: 1,
+					name: 'TV shows to watch',
+					itemArr: [
+						{
+							order: 0,
+							title: 'Breaking Bad'
+						},
+						{
+							order: 1,
+							title: 'Narcos'
+						},
+						{
+							order: 2,
+							title: '30 Rock'
+						},
+						{
+							order: 3,
+							title: 'The Simpsons'
+						},
+						{
+							order: 4,
+							title: 'Game of Thrones'
+						}
+					]
+				}
+			],
+			userListArray : [],
 		}
 	},
 	components: {
-		todoItem
+		todoItem,
+		SlickItem,
+		SlickList
 	},
 	props: ["taskList"],
 	computed: {
+		// Slick list (sorted items)
+		orderedUserTaskLists: {
+			get: function () {
+				if (this.randomListData.length == 0) {
+					//console.log("orderedUserTaskLists: Warning, no 'items' data")
+					return
+				} else {
+					//console.log("orderedUserTaskLists: Ordering list array by user listOrder...")
+					
+					let unsortedList = this.randomListData;													// The unsorted data. Where we get this from will change later.			
+					let mylist = unsortedList.sort((a,b) => (a.listOrder > b.listOrder) ? 1 : -1)  	// New sorted data. Sort the array of lists by user preferred list order
+					
+					// eslint-disable-next-line
+					this.userListArray = mylist
+					//console.log("orderedUserTaskLists: Done")
+
+					return mylist;
+				}
+			},
+			set: function (newValue) {
+				// Update the current display of the user list to the new order
+				let tempNew = newValue;																// Set a temporary variable for the newly received data
+				for (let y = 0; y != tempNew.length ; y++) {										// Iterate over lists to update with the newly received user order.
+					tempNew[y].listOrder = y;
+				}
+				this.userListArray = tempNew;
+				/*
+				for (let x = 0; x != newValue.length ; x++) {
+					console.log(x + ") " + this.userListArray[x].name + " --- order: " + this.userListArray[x].listOrder)
+				}
+				*/
+				//alert(this.userListArray[0].listOrder)
+			}
+		},
 		// This is reactive filter functionality.
 
 		// Note to self, how this is currently working:
 		/*
 			1) Filtering by task stake (all, active, complete)
 			2) Of the filtered list, create two separate "pinned" and "unpinned" task lists
-			3) Sort both lists by user_order, aimed at giving the user ordering customisation later.
+			3) Sort both lists by standard_order, aimed at giving the user ordering customisation later.
 			4) Start with the sorted pinned list and concatenate the sorted unpinned list. This way the pinned tasks appear on top.
 			5) Return the final list.
 
@@ -106,8 +244,8 @@ export default {
 			let onlyPinned = mylist.filter(task => task.pinned);
 			
 			// Get all task objects sorted by the user preference.
-			let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.user_order > b.user_order) ? 1 : -1)
-			let sortedByUserOrder_noPinned = noPinned.sort((a,b) => (a.user_order > b.user_order) ? 1 : -1)
+			let sortedByUserOrder_pinned = onlyPinned.sort((a,b) => (a.standard_order > b.standard_order) ? 1 : -1)
+			let sortedByUserOrder_noPinned = noPinned.sort((a,b) => (a.standard_order > b.standard_order) ? 1 : -1)
 
 			let final = sortedByUserOrder_pinned.concat(sortedByUserOrder_noPinned);
 			
@@ -161,64 +299,60 @@ export default {
 		}
 	},
 	methods: {
-		test() {
-			/*
-			for (var x in this.taskList) {
-				console.log(this.taskList[x].pinned);
-			}
-			*/
-			/*
-			//Fizzbuzz challenge
-			var numbers=20;
-			for (let x = 1; x != numbers; x++) {
-				let fizz, buzz = false;
-				//Fizz first, multiples of 3.
-				if (Number.isInteger(x/3)) {
-					fizz = true;
-				}
-				if (Number.isInteger(x/5)) {
-					buzz = true;
-				}
-				// Output to log
-				if (fizz && buzz) {
-					console.log("Fizzbuzz!");
-				}
-				else if (fizz && !buzz) {
-					console.log("Fizz");
-				}
-				else if (!fizz && buzz) {
-					console.log("Buzz");
-				}
-				else {
-					// default
-					console.log(x);
-				}
-			}
-			*/
+		
+		listReorderSwitch() {
+			this.moveTaskLock = !this.moveTaskLock;
 		},
+				/*
+				//alert("okay, lets unlock");
+				let x = document.getElementsByClassName("list-item");	//my array of elements
+				let elChild = document.createElement('span');
+				//elChild.innerHTML = 'Content';
+				elChild.classList = 'handle';
+				for(let y = 0; y<x.length; y++) {
+					//console.log(y);
+					let el = x[y];
+					el.insertBefore(elChild, el.firstChild);
+					//console.log(el);
+					//<span v-handle class="handle"></span>
+				}
+			}
+		},
+		*/
+		getChangeList (val) {
+			// eslint-disable-next-line
+			console.log(val, 'val')
+		},
+		getChangeLists (vals) {
+			// eslint-disable-next-line
+			console.log(vals, 'vals')
+		},
+		
 		// Method to add a new task
 		addTask(newTask) {
-			// Need to get a new value for the user_order variable. User will be able to change this, but we should set it anyway to last number+1
-			//alert(this.taskList[0].user_order);
+			// Need to get a new value for the standard_order variable. User will be able to change this, but we should set it anyway to last number+1
+			//alert(this.taskList[0].standard_order);
 
 			let highestNum = 0;	// Default
 			for (let x in this.taskList) {
-				//alert(this.taskList[x].user_order);
-				//alert(this.taskList[x].user_order);
-				if (this.taskList[x].user_order >= highestNum) {
-					//alert(this.taskList[x].user_order+" > "+highestNum);
-					highestNum = this.taskList[x].user_order
+				//alert(this.taskList[x].standard_order);
+				//alert(this.taskList[x].standard_order);
+				if (this.taskList[x].standard_order >= highestNum) {
+					//alert(this.taskList[x].standard_order+" > "+highestNum);
+					highestNum = this.taskList[x].standard_order
 				}
 			}
 			axios.post('/tasks', {
 				title: newTask.title,
 				completed: newTask.completed,
 				pinned: newTask.pinned,
-				user_order: highestNum+1,
+
+				standard_order: highestNum+1,
+				pinned_order: highestNum+1,
 			})
 				.then(response => {
-					//console.log("response:")
-					//console.log(response.data);
+					console.log("response:")
+					console.log(response.status);
 					
 					//this.taskList = response.data;
 					// If successful api post, update locally too (thinking this would be better instead of fetching full list again)
@@ -229,7 +363,7 @@ export default {
 							id: response.data.id,
 							title: response.data.title,
 							// User customisation
-							user_order: response.data.user_order,
+							standard_order: response.data.standard_order,
 							// Timestamp stuff
 							added: response.data.created_at,
 							lastEdit: response.data.updated_at,
@@ -241,6 +375,7 @@ export default {
 					}
 				})
 				.catch(error => {
+					// eslint-disable-next-line
 					console.log(error);
 				})
 		},
@@ -268,6 +403,7 @@ export default {
 						}
 					})
 					.catch(error => {
+						// eslint-disable-next-line
 						console.log(error);
 					})
 			}
@@ -298,7 +434,7 @@ export default {
 				title: currentTask.title,
 				completed: currentTask.completed,
 				pinned: isPinned,					// <-- The part we're updating
-				user_order: currentTask.user_order,
+				standard_order: currentTask.standard_order,
 			})
 				.then(response => {
 					if (response.status == 200) {
@@ -310,6 +446,7 @@ export default {
 					}
 				})
 				.catch(error => {
+					// eslint-disable-next-line
 					console.log(error);
 				})
 
@@ -343,7 +480,7 @@ export default {
 				title: currentTask.title,
 				completed: currentTask.completed,
 				pinned: currentTask.pinned,
-				user_order: currentTask.user_order,
+				standard_order: currentTask.standard_order,
 			})
 				.then(response => {
 					//console.log("response:")
@@ -358,7 +495,7 @@ export default {
 							id: response.data.id,
 							title: response.data.title,
 							// User customisation
-							user_order: response.data.user_order,
+							standard_order: response.data.standard_order,
 							// Timestamp stuff
 							added: response.data.created_at,
 							lastEdit: response.data.updated_at,
@@ -370,6 +507,7 @@ export default {
 					}
 				})
 				.catch(error => {
+					// eslint-disable-next-line
 					console.log(error);
 				})
 		},
@@ -382,7 +520,7 @@ export default {
 				title: newTitle,
 				completed: currentTask.completed,
 				pinned: currentTask.pinned,
-				user_order: currentTask.user_order,
+				standard_order: currentTask.standard_order,
 			})
 				.then(response => {
 					//console.log("response:")
@@ -397,7 +535,7 @@ export default {
 							id: response.data.id,
 							title: response.data.title,
 							// User customisation
-							user_order: response.data.user_order,
+							standard_order: response.data.standard_order,
 							// Timestamp stuff
 							added: response.data.created_at,
 							lastEdit: response.data.updated_at,
@@ -409,6 +547,7 @@ export default {
 					}
 				})
 				.catch(error => {
+					// eslint-disable-next-line
 					console.log(error);
 				})
 				
@@ -437,6 +576,8 @@ export default {
 
 <style lang="scss">
 	@import url("https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css");
+	$assets: '~@/assets/';
+
 	.list-info-container {
 		display: flex;
 		align-items: center;
@@ -532,6 +673,99 @@ export default {
 		width: 100%;
 		background-color: red;
 		margin: 50px 0px;
+	}
+
+	// Slick stuff:
+
+	.root1 {
+	width: 100%;
+	display: flex;
+	height: 100%;
+	box-sizing: border-box;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	background: #333;
+	}
+
+	.root2 {
+		display: flex;
+		height: 100%;
+	}
+
+	.list {
+		max-height: 80vh;
+		width: 100%;
+		margin: 0 auto;
+		padding: 0;
+		overflow: auto;
+		//background-color: #f3f3f3;
+		//border: 1px solid #efefef;
+		border-radius: 3;
+	}
+
+	.list-item {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		padding: 20px;
+		background-color: rgb(250, 250, 250);
+		border-bottom: 1px solid #efefef;
+		box-sizing: border-box;
+		user-select: none;
+		color: #333;
+		font-weight: 400;
+	}
+
+	.stylizedHelper {
+		background-color: rgb(230, 230, 230);
+		color: rgb(75, 75, 75);
+		border-radius: 5px;
+	}
+
+	.SortableList {
+		display: flex;
+		width: 100%;
+		white-space: nowrap;
+		max-height: 80vh;
+		margin: 0 auto;
+		padding: 0;
+		overflow: auto;
+		background-color: #f3f3f3;
+		border: 1px solid #efefef;
+		border-radius: 3;
+	}
+
+	.SortableItem {
+		display: inline;
+		align-items: center;
+		padding: 10px;
+		background-color: #fff;
+		border-bottom: 1px solid #efefef;
+		box-sizing: border-box;
+		user-select: none;
+		color: #333;
+		font-weight: 400;
+		overflow: hidden;
+	}
+
+	.itemheader {
+		width: 100%;
+		padding: 10px;
+		margin-bottom: 10px;
+		font-weight: bold;
+	}
+	
+	.handle {
+		display: block;
+		width: 18px;
+		height: 18px;
+		background-image: url( $assets + "/images/handle.svg");
+		background-size: contain;
+		background-repeat: no-repeat;
+		opacity: 0.25;
+		margin-right: 20px;
+		cursor: row-resize;
 	}
 
 </style>
