@@ -704,8 +704,7 @@ export default {
 		font-size: 16px;
 		border-top: 1px solid black;
 		padding-top: 14px;
-		margin-bottom: 14px;
-		margin-top: 50px;
+		
 	}
    .noTaskText {
 		color: rgba(000, 000, 000, 0.3);
