@@ -176,11 +176,11 @@ export default {
 	}
 	.is-complete p {
 		text-decoration: line-through;
-		color: rgba(000,000,000,0.3);
+		color: rgba(255, 255, 255, 0.25);
 	}
 	.del {
-		background: silver;
-		color: white;
+		background: rgb(52, 58, 63);
+		color: silver;
 		border: none;
 		cursor: pointer;
 		padding: 15px 0;
@@ -189,8 +189,10 @@ export default {
 		float: right;
 		border-top-left-radius: 15%;
 		margin: 0;
+		font-size: 14pt;
+		line-height: 15pt;
 	}
-	.del:hover { background: grey; }
+	.del:hover { background: rgb(45, 50, 54); }
 	input[type='checkbox'] {
 		margin-left: 5px;
 		margin-top: 10px;
@@ -208,23 +210,25 @@ export default {
 		align-items: center;
 	}
 	.todo-item-label {
-		padding: 0px;
-		border: 1px solid white;
+		padding: 0 5px;
+		/*border: 1px solid white;*/
 		margin-left: 12px;
 		float: left;
 		
 	}
 	.todo-item-edit {
 		font-size: 12pt;
-		line-height: 20pt;
-		padding:12px 0;
-		color: #2c3e50;
+		padding:12px 6px;
+		color: silver;
 		margin-left: 10px;
 		margin-right: 10px;
 		line-height: normal;
 		width: calc(100% - 50px);
 		float: left;
-		border: 1px solid #ccc; //override defaults
+		background-color: rgb(52, 58, 63);
+		
+		border: 0px solid #ccc; //override defaults
+		
 		font-family: 'Avenir', Helvetica, Arial, sans-serif;
 		font-style: italic;
 		&:focus {

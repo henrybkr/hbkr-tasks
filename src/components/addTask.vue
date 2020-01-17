@@ -1,7 +1,7 @@
 <template>
 	<div>
-		<div class="container mt-5">
-			<input type="text" class="todo-input" name="title" @keyup.enter="addTask" v-model="title" placeholder="Hey, what are you working on?">
+		<div class="container pt-4">
+			<input autocomplete="off" type="text" class="todo-input" name="title" @keyup.enter="addTask" v-model="title" placeholder="What needs doing boss?">
 			<!-- Submit button if preferred, but keep in mind we need to add the form element back and include a @submit="addTask" for it to launch when submit is pressed -->
 			<!--<input type="submit" value="Submit" class="btn">-->
 		</div>
@@ -69,22 +69,24 @@ export default {
 	form { display: flex; }
 	input[type="text"] {
 		flex: 10;
-		padding: 5px;
 		border: 0 solid #b7b7b7;
-		border-bottom: 1px dashed grey;
+		
 	}
 	input[type="submit"] { flex: 2; }
 
 
 	.todo-input {
 		width: 100%;
-		padding: 10px 18px;
+		padding: 10px 20px;
 		font-size: 18px;
 		margin-bottom: 16px;
 		
 		&:focus {
 		outline: 0;
 		}
+
+		background-color: rgb(52, 58, 63);
+		border-radius: 2.5px;
 	}
 	.btn {
 	display: inline-block;

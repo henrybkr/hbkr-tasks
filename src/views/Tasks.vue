@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mainTasksContainer">
 	<div class="d-none container mt-5">
 		<p>errorInfo code = {{ errorInfo.code }}</p>
 		<p>errorInfo message = {{ errorInfo.message }}<br></p>
@@ -7,29 +7,32 @@
 		<!--<b-button variant="success" @click="test()">{{ errorInfo.message }}</b-button>-->
 	</div>
 	<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-	<div class="errorSpace mt-5" v-if="displayLoading" v-bind:key="20">
-		<div class="container text-center">
-			<img class="mr-2" src="~@/assets/images/loading.gif" height="20" width="20"/><i>Please wait, attempting to find your tasks!</i>
-		</div>
-	</div>
-	
-	<div v-else v-bind:key="21">
-		<div class="errorSpace mt-5" v-if="displayError">
-			<div class="container">
-				<b-alert show variant="dark">
-					<p>Uh oh, seems we've run into an issue. Let's have a look:</p>
-					<p>
-						<b>Error Code:</b> {{ errorInfo.code }}<br>
-						<b>API Response:</b> {{ errorInfo.message }}
-					</p>
-				</b-alert>
+		<div class="loadingSpace" v-if="displayLoading" v-bind:key="20">
+			<div class="container p-4 loadingMessage">
+				<img class="mb-1" src="~@/assets/images/loading.gif" height="40" width="40"/>
+				<i>loading your tasks...</i>
 			</div>
 		</div>
-		<div v-else>
-			<AddTask />
-			<taskList v-bind:taskList="taskList" />
+	</transition-group>
+
+	<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+		<div v-if="!displayLoading" v-bind:key="21">
+			<div class="errorSpace mt-5" v-if="displayError">
+				<div class="container">
+					<b-alert show variant="dark">
+						<p>Uh oh, seems we've run into an issue. Let's have a look:</p>
+						<p>
+							<b>Error Code:</b> {{ errorInfo.code }}<br>
+							<b>API Response:</b> {{ errorInfo.message }}
+						</p>
+					</b-alert>
+				</div>
+			</div>
+			<div v-else>
+				<AddTask />
+				<taskList v-bind:taskList="taskList" />
+			</div>
 		</div>
-	</div>
 	</transition-group>
 	
   </div>
@@ -42,7 +45,7 @@ import AddTask from '../components/addTask';
 import axios from 'axios';
 
 // This will need changing once online. Currently in dev mode
-axios.defaults.baseURL = "http://localhost:8000/api"
+axios.defaults.baseURL = "http://localhost:8001/api"
 
 /* eslint-disable */
 
@@ -133,6 +136,26 @@ body {
 	background: #666;
 }
 
+.mainTasksContainer {
+	min-height: calc(100vh - 75px);
+	background-color: rgb(66, 72, 79);
+}
+.loadingSpace {
+	width: 100%;
+	height: auto;
 
+	position: absolute;
+}
+.loadingMessage {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: column;
+	opacity: 0.6;
+
+	/* Disable selecting */
+	user-select: none;
+	-moz-user-select: none;
+}
 
 </style>

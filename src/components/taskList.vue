@@ -2,24 +2,30 @@
 	<div>
 		<div class="container">
 
-			<b-button class="mt-2 mb-2" variant="success" @click="test()">test me</b-button> <!-- Button, currently hidden, typically used for testing a function.-->
+			<!--
+			<b-button class="mt-2 mb-2" variant="success" @click="test()">test me</b-button>
+			-->
 
-			<!-- -------------------------------- -->
-
-			<div class="container mt-5 mb-5">
+			<div class="mt-2 mb-5">
+				<!--<hr class="my-4">-->
+				<b-button class="mt-2 mb-2 float-right" variant="" @click="listReorderSwitch()">
+					<!-- Unlock/Lock list buttons -->
+					<span v-if="!moveTaskLock"><font-awesome-icon class="mr-2" :icon="[ 'fas', 'lock' ]" height="30px"/>Locked</span>
+					<span v-if="moveTaskLock"><font-awesome-icon class="mr-2" :icon="[ 'fas', 'lock-open' ]" height="20px"/>Unlocked</span>
+				</b-button>
 				<hr class="my-4">
-				<b-button class="mt-2 mb-2" variant="" @click="listReorderSwitch()"><font-awesome-icon class="mr-2" :icon="[ 'fas', 'arrows-alt' ]" height="30px"/>Unlock/Lock</b-button> 
-				<hr class="my-4">
-				<p>Vue-Slicksort Testing space:</p>
+				<p>Your current task list:</p>
 				<div class="root1">
-					<SlickList :lockToContainerEdges="true" axis="x" lockAxis="x" v-model="orderedUserTaskLists" class="SortableList row" @input="getChangeLists">
-						<SlickItem v-for="(item, index) in userListArray" class="SortableItem col-4" :index="index" :key="index">
-							<div class="itemheader">{{ item.name }} -- order: {{ item.listOrder }}</div>
+					<!-- @input="getChangeLists"-->
+					<SlickList :lockToContainerEdges="true" axis="x" lockAxis="x" v-model="orderedUserTaskLists" class="SortableList row">
+						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-4" :index="index" :key="index">
+							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div> <!-- Order (plus 1 to start at 1) and title of the list -->
 							
 							<div class="root2">
-								<SlickList :lockToContainerEdges="true" class="list" v-model="item.itemArr" helperClass="stylizedHelper" useDragHandle>
+								<SlickList :lockToContainerEdges="false" class="list" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
 									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
-										<span v-if="moveTaskLock" v-handle class="handle"></span><span>{{ item.order }} -- {{ item.title }}</span>
+										<span v-if="moveTaskLock" v-handle class="handle"></span> <!-- Handle only displays if list is unlocked -->
+										<span>{{ item.order+1 }}) {{ item.title }}</span> <!-- Order (plus 1 to start at 1) and title of the task -->
 									</SlickItem>
 								</SlickList>
 							</div>
@@ -72,9 +78,6 @@
 				</div>
 			</div>
 
-			<!-- ------------------------------ -->
-
-			
 		</div>
 	</div>
 </template>
@@ -104,22 +107,22 @@ export default {
 			// temporary cache for the edit, to remember what it was before changing it
 			beforeEditCache: '',
 			filter: 'all',
-			moveTaskLock: true,
+			moveTaskLock: false,
 			randomListData: [
 				{
 					listOrder: 0,
 					name: 'Shopping List',
 					itemArr: [
 						{
-							order: 0,
+							order: 2,
 							title: 'New Desktop PC'
 						},
 						{
-							order: 1,
+							order: 0,
 							title: 'Updated Smartphone'
 						},
 						{
-							order: 2,
+							order: 1,
 							title: 'HQ headphones'
 						}
 					]
@@ -165,7 +168,6 @@ export default {
 					]
 				}
 			],
-			userListArray : [],
 		}
 	},
 	components: {
@@ -175,38 +177,55 @@ export default {
 	},
 	props: ["taskList"],
 	computed: {
+
+		orderedUserTaskItems: {
+			get: function () {
+				// eslint-disable-next-line
+				console.log("hello")
+				return []
+			},
+			set: function () {
+				// eslint-disable-next-line
+				//alert(newValue)
+			}
+		},
 		// Slick list (sorted items)
 		orderedUserTaskLists: {
 			get: function () {
 				if (this.randomListData.length == 0) {
-					//console.log("orderedUserTaskLists: Warning, no 'items' data")
 					return
 				} else {
-					//console.log("orderedUserTaskLists: Ordering list array by user listOrder...")
+					// First sort the lists themselves into the user preferred order.
 					
 					let unsortedList = this.randomListData;													// The unsorted data. Where we get this from will change later.			
-					let mylist = unsortedList.sort((a,b) => (a.listOrder > b.listOrder) ? 1 : -1)  	// New sorted data. Sort the array of lists by user preferred list order
+					let sortedList = unsortedList.sort((a,b) => (a.listOrder > b.listOrder) ? 1 : -1)  		// New sorted data. Sort the array of lists by user preferred list order
+
+					// Now sort the individual items within each list array
+					
+					for (let x = 0; x != sortedList.length; x++) {
+						sortedList[x].itemArr.sort((a,b) => (a.order > b.order) ? 1 : -1)
+					}
 					
 					// eslint-disable-next-line
-					this.userListArray = mylist
-					//console.log("orderedUserTaskLists: Done")
+					//this.randomListData = sortedList															// Update the sortedList data element
 
-					return mylist;
+					return sortedList;
 				}
 			},
 			set: function (newValue) {
+				
 				// Update the current display of the user list to the new order
-				let tempNew = newValue;																// Set a temporary variable for the newly received data
-				for (let y = 0; y != tempNew.length ; y++) {										// Iterate over lists to update with the newly received user order.
-					tempNew[y].listOrder = y;
+				
+				for (let y = 0; y != newValue.length ; y++) {										// Iterate over lists to update with the newly received user order.
+					newValue[y].listOrder = y;
 				}
-				this.userListArray = tempNew;
+				//this.randomListData = tempNew;
 				/*
 				for (let x = 0; x != newValue.length ; x++) {
-					console.log(x + ") " + this.userListArray[x].name + " --- order: " + this.userListArray[x].listOrder)
+					console.log(x + ") " + this.randomListData[x].name + " --- order: " + this.randomListData[x].listOrder)
 				}
 				*/
-				//alert(this.userListArray[0].listOrder)
+				//alert(this.randomListData[0].listOrder)
 			}
 		},
 		// This is reactive filter functionality.
@@ -299,6 +318,9 @@ export default {
 		}
 	},
 	methods: {
+		blah(val) {
+			alert(val);
+		},
 		
 		listReorderSwitch() {
 			this.moveTaskLock = !this.moveTaskLock;
@@ -351,8 +373,8 @@ export default {
 				pinned_order: highestNum+1,
 			})
 				.then(response => {
-					console.log("response:")
-					console.log(response.status);
+					//console.log("response:")
+					//console.log(response.status);
 					
 					//this.taskList = response.data;
 					// If successful api post, update locally too (thinking this would be better instead of fetching full list again)
@@ -556,6 +578,103 @@ export default {
 			//this.taskList.filter(task => task.id === inputID)[0].lastEdit = format(new Date(), 'yyyy-MM-dd-hh-mm-ss');
 				
 			
+		},
+		testing(array) {
+			// eslint-disable-next-line
+			console.log(array)
+		},
+		changeTaskOrder(test) {
+			// eslint-disable-next-line
+			console.log(test)
+			/*
+			let listnum = list.listOrder
+			//alert("listnum: "+listnum+"\nold order: "+event.oldIndex+"\nnew order: "+event.newIndex)
+			
+			let tempList = this.randomListData
+			// eslint-disable-next-line
+			//console.log(tempList[listnum].itemArr)
+
+
+			let tempArray = tempList[listnum].itemArr
+			// eslint-disable-next-line
+			console.log(tempArray)
+
+			*/
+
+			/*
+			// Loop through the array to find the old index
+			for (let x = 0; x != tempArray.length; x++) {
+				if (x == event.oldIndex) {
+
+				}
+			}
+			*/
+			
+			
+			/*
+			randomListData: [
+				{
+					listOrder: 0,
+					name: 'Shopping List',
+					itemArr: [
+						{
+							order: 2,
+							title: 'New Desktop PC'
+						},
+						{
+							order: 0,
+							title: 'Updated Smartphone'
+						},
+						{
+							order: 1,
+							title: 'HQ headphones'
+						}
+					]
+				},
+				{
+					listOrder: 2,
+					name: 'Movies to watch',
+					itemArr: [
+						{
+							order: 0,
+							title: 'Inception'
+						},
+						{
+							order: 1,
+							title: 'King Kong'
+						},
+					]
+				},
+				{
+					listOrder: 1,
+					name: 'TV shows to watch',
+					itemArr: [
+						{
+							order: 0,
+							title: 'Breaking Bad'
+						},
+						{
+							order: 1,
+							title: 'Narcos'
+						},
+						{
+							order: 2,
+							title: '30 Rock'
+						},
+						{
+							order: 3,
+							title: 'The Simpsons'
+						},
+						{
+							order: 4,
+							title: 'Game of Thrones'
+						}
+					]
+				}
+			],
+			*/
+			// eslint-disable-next-line
+			//console.log(event);
 		}
 	},
 	created() {
@@ -633,21 +752,21 @@ export default {
 
 	button {
 		font-size: 14px;
-		background-color: white;
+		background: rgba(000, 000, 000, 0.15);
 		appearance: none;
 		padding: 2px 10px;
 		margin-right:5px;
 		display: inline-block;
-		border: 1px solid lightgray;
+		border: 0px solid lightgray;
 		&:hover {
-			background: rgba(000, 000, 000, 0.05);
+			background: rgba(000, 000, 000, 0.2);
 		}
 		&:focus {
 			outline: none;
 		}
 	}
 	.active {
-		background: rgba(000, 000, 000, 0.1);
+		background: rgba(000, 000, 000, 0.3);
 	}
 	// CSS Transitions
 	.fade-enter-active, .fade-leave-active {
@@ -685,7 +804,6 @@ export default {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	background: #333;
 	}
 
 	.root2 {
@@ -695,6 +813,7 @@ export default {
 
 	.list {
 		max-height: 80vh;
+		height: auto;
 		width: 100%;
 		margin: 0 auto;
 		padding: 0;
@@ -702,6 +821,7 @@ export default {
 		//background-color: #f3f3f3;
 		//border: 1px solid #efefef;
 		border-radius: 3;
+		
 	}
 
 	.list-item {
@@ -709,16 +829,16 @@ export default {
 		align-items: center;
 		width: 100%;
 		padding: 20px;
-		background-color: rgb(250, 250, 250);
-		border-bottom: 1px solid #efefef;
+		background-color: rgb(60, 66, 73);
+		/*border-bottom: 1px solid #efefef;*/
 		box-sizing: border-box;
 		user-select: none;
-		color: #333;
+		color: rgb(206, 208, 209);
 		font-weight: 400;
 	}
 
 	.stylizedHelper {
-		background-color: rgb(230, 230, 230);
+		background-color: rgb(52, 58, 63);
 		color: rgb(75, 75, 75);
 		border-radius: 5px;
 	}
@@ -731,17 +851,17 @@ export default {
 		margin: 0 auto;
 		padding: 0;
 		overflow: auto;
-		background-color: #f3f3f3;
-		border: 1px solid #efefef;
+		/*border: 1px solid #efefef;*/
 		border-radius: 3;
+		
 	}
 
 	.SortableItem {
 		display: inline;
 		align-items: center;
-		padding: 10px;
-		background-color: #fff;
-		border-bottom: 1px solid #efefef;
+		padding: 0;
+		
+		/*border-bottom: 1px solid #efefef;*/
 		box-sizing: border-box;
 		user-select: none;
 		color: #333;
@@ -752,18 +872,20 @@ export default {
 	.itemheader {
 		width: 100%;
 		padding: 10px;
-		margin-bottom: 10px;
-		font-weight: bold;
+		
+		
+		background-color: rgb(52, 58, 63);
+		color: rgb(204, 206, 207);
 	}
 	
 	.handle {
 		display: block;
 		width: 18px;
 		height: 18px;
-		background-image: url( $assets + "/images/handle.svg");
+		background-image: url( $assets + "/images/handle_white.svg");
 		background-size: contain;
 		background-repeat: no-repeat;
-		opacity: 0.25;
+		opacity: 0.4;
 		margin-right: 20px;
 		cursor: row-resize;
 	}

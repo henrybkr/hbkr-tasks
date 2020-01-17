@@ -1,17 +1,17 @@
 <template>
-	<div>
+	<div class="fullpage">
 		<div class="container">
+			
+			<h2 class="pt-4 display-4 pb-0">Great, you made it!</h2>
+			<p class="lead">Welcome to Henry's task management application.</p>
 			<hr class="my-4 line-dim">
-			<h2 class="display-4">Great, you made it!</h2>
-			<p class="lead">Welcome to Henry's task management system.</p>
-			<hr class="my-4">
-			<p>This is a Vue.JS based application which offers users the ability to set and manage tasks. The idea is to simplify requirements for a developer by making them both definable and achievable.</p>
-			<hr class="my-4 line-dim">
+			<p class="pb-4">This is a Vue.JS based application which offers users the ability to set and manage tasks. The idea is to simplify requirements for a developer by making them both definable and achievable.</p>
+			
 		</div>
 		
 			<div class="jumbotron bg-dark rounded-0">
 				<div class="container text-light">
-					<h3 class="display-4 smallerTitle">Project Aims</h3>
+					<h3 class="display-4 smallerTitle pb-0">Project Aims</h3>
 					<p class="lead">This project is a learning project but in order go beyond a simple task list typically found in tutorials, I've set myself the following requirements:</p>
 					
 					<ul class="no-bullets">
@@ -54,5 +54,5 @@ export default {
 	.line-dim { border-color: rgba(255, 255, 255, 0.2) !important; }
 	.no-bullets { list-style: none; }
 	.mylogo { margin-top: -5px;}
-
+	.fullpage { min-height: calc(100vh - 75px)}
 </style>

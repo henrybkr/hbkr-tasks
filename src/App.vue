@@ -23,9 +23,14 @@ export default {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    color: silver;
+    
   }
   body {
     font-family: Arial, Helvetica, sans-serif;
     line-height: 1.4;
+  }
+  #content {
+    background-color: rgb(66, 72, 79);
   }
 </style>

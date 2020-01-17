@@ -30,13 +30,13 @@ export default {
     $assets: '~@/assets/';
 
     .header {
-        background: #333;
+        background: rgb(52, 58, 63);
         color: #fff;
         text-align: center;
         padding: 0;
         display: flex;
         justify-content: space-between;
-        min-height: 75px;
+        height: 75px;
         
     }
     .header a {
@@ -48,10 +48,10 @@ export default {
         background: url( $assets + "/images/logo1.svg") no-repeat center;
         background-size: 100%;
         float: left;
-        background-color: rgba(000,000,000, 0.1);
+        background-color: rgb(47, 52, 57);
     }
     .logo:hover {
-        background-color: rgba(000,000,000, 0.2);
+        background-color: rgb(42, 47, 51);
         cursor: pointer;
     }
     .start-space {
@@ -64,12 +64,12 @@ export default {
         text-align: center;
     }
     .nav *:hover {
-        background-color: rgba(000,000,000, 0.2);
+        background-color: rgb(42, 47, 51);
         text-decoration: none;
         
     }
     .router-link-exact-active {
-        background-color: rgba(000,000,000, 0.1);
+        background-color: rgb(47, 52, 57);
         padding-top:25px;
         border-bottom: 4px solid grey;
     }
