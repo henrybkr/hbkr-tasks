@@ -1,41 +1,40 @@
 <template>
-  <div class="mainTasksContainer">
-	<div class="d-none container mt-5">
-		<p>errorInfo code = {{ errorInfo.code }}</p>
-		<p>errorInfo message = {{ errorInfo.message }}<br></p>
-		<p>taskList.length = {{ taskList.length }}</p>
-		<!--<b-button variant="success" @click="test()">{{ errorInfo.message }}</b-button>-->
-	</div>
-	<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-		<div class="loadingSpace" v-if="displayLoading" v-bind:key="20">
-			<div class="container p-4 loadingMessage">
-				<img class="mb-1" src="~@/assets/images/loading.gif" height="40" width="40"/>
-				<i>loading your tasks...</i>
-			</div>
+	<div class="mainTasksContainer">
+		<div class="d-none container mt-5">
+			<p>errorInfo code = {{ errorInfo.code }}</p>
+			<p>errorInfo message = {{ errorInfo.message }}<br></p>
+			<p>taskList.length = {{ taskList.length }}</p>
+			<!--<b-button variant="success" @click="test()">{{ errorInfo.message }}</b-button>-->
 		</div>
-	</transition-group>
-
-	<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-		<div v-if="!displayLoading" v-bind:key="21">
-			<div class="errorSpace mt-5" v-if="displayError">
-				<div class="container">
-					<b-alert show variant="dark">
-						<p>Uh oh, seems we've run into an issue. Let's have a look:</p>
-						<p>
-							<b>Error Code:</b> {{ errorInfo.code }}<br>
-							<b>API Response:</b> {{ errorInfo.message }}
-						</p>
-					</b-alert>
+		<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+			<div class="loadingSpace" v-if="displayLoading" v-bind:key="20">
+				<div class="container p-4 loadingMessage">
+					<img class="mb-1" src="~@/assets/images/loading.gif" height="40" width="40"/>
+					<i>loading your tasks...</i>
 				</div>
 			</div>
-			<div v-else>
-				<AddTask />
-				<taskList v-bind:taskList="taskList" />
+		</transition-group>
+
+		<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+			<div v-if="!displayLoading" v-bind:key="21">
+				<div class="errorSpace mt-5" v-if="displayError">
+					<div class="container">
+						<b-alert show variant="dark">
+							<p>Uh oh, seems we've run into an issue. Let's have a look:</p>
+							<p>
+								<b>Error Code:</b> {{ errorInfo.code }}<br>
+								<b>API Response:</b> {{ errorInfo.message }}
+							</p>
+						</b-alert>
+					</div>
+				</div>
+				<div v-else>
+					<AddTask class="pt-4"/>
+					<taskList class="pt-4" v-bind:taskList="taskList" />
+				</div>
 			</div>
-		</div>
-	</transition-group>
-	
-  </div>
+		</transition-group>	
+	</div>
 </template>
 
 <script>

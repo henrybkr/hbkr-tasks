@@ -1,36 +1,58 @@
 <template>
 	<div>
-		<div class="container">
+		<div class="container-fluid">
 
-			<!--
-			<b-button class="mt-2 mb-2" variant="success" @click="test()">test me</b-button>
-			-->
+			
 
-			<div class="mt-2 mb-5">
+			<div class="slick-container mb-4">
 				<!--<hr class="my-4">-->
-				<b-button class="mt-2 mb-2 float-right" variant="" @click="listReorderSwitch()">
-					<!-- Unlock/Lock list buttons -->
-					<span v-if="!moveTaskLock"><font-awesome-icon class="mr-2" :icon="[ 'fas', 'lock' ]" height="30px"/>Locked</span>
-					<span v-if="moveTaskLock"><font-awesome-icon class="mr-2" :icon="[ 'fas', 'lock-open' ]" height="20px"/>Unlocked</span>
-				</b-button>
-				<hr class="my-4">
-				<p>Your current task list:</p>
+				<div class="button-bar row m-0 p-0 clearfix">
+					<div class="col-6 list-intro p-0">
+						<p>Your current task list:</p>
+					</div>
+					<div class="col-6 list-buttons p-0">
+						<b-button class="mt-2 mb-2 float-right" variant="dark" @click="test()">
+							<font-awesome-icon class="" :icon="[ 'fas', 'flask' ]" height="30px"/>
+						</b-button>
+						<b-button class="mt-2 mb-2 float-right" variant="" @click="listReorderSwitch()">
+							<!-- Unlock/Lock list buttons -->
+							<span v-if="!moveTaskLock"><font-awesome-icon class="" :icon="[ 'fas', 'lock' ]" height="30px"/></span>
+							<span v-if="moveTaskLock"><font-awesome-icon class="" :icon="[ 'fas', 'lock-open' ]" height="20px"/></span>
+						</b-button>
+					</div>
+				</div>
+				
+				
+				
 				<div class="root1">
-					<!-- @input="getChangeLists"-->
-					<SlickList :lockToContainerEdges="true" axis="x" lockAxis="x" v-model="orderedUserTaskLists" class="SortableList row">
-						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-4" :index="index" :key="index">
+					<!-- Horizontal version -->
+					<SlickList id="hor-list" :lockToContainerEdges="true" axis="x" v-model="orderedUserTaskLists" class="SortableList row">
+						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-12 col-md-4 col-lg-3 " :index="index" :key="index">
 							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div> <!-- Order (plus 1 to start at 1) and title of the list -->
 							
 							<div class="root2">
-								<SlickList :lockToContainerEdges="false" class="list" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
+								<SlickList :lockToContainerEdges="false" class="list mb-2" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
 									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
 										<span v-if="moveTaskLock" v-handle class="handle"></span> <!-- Handle only displays if list is unlocked -->
 										<span>{{ item.order+1 }}) {{ item.title }}</span> <!-- Order (plus 1 to start at 1) and title of the task -->
 									</SlickItem>
 								</SlickList>
 							</div>
+						</SlickItem>
+					</SlickList>
+					<!-- Vertical version -->
+					<SlickList id="ver-list" :lockToContainerEdges="true" axis="y" v-model="orderedUserTaskLists" class="SortableList row d-none">
+						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-12 col-md-4 col-lg-3 " :index="index" :key="index">
+							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div> <!-- Order (plus 1 to start at 1) and title of the list -->
 							
-							
+							<div class="root2">
+								<SlickList :lockToContainerEdges="false" class="list mb-2" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
+									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
+										<span v-if="moveTaskLock" v-handle class="handle"></span> <!-- Handle only displays if list is unlocked -->
+										<span>{{ item.order+1 }}) {{ item.title }}</span> <!-- Order (plus 1 to start at 1) and title of the task -->
+									</SlickItem>
+								</SlickList>
+							</div>
 						</SlickItem>
 					</SlickList>
 				</div>
@@ -851,8 +873,7 @@ export default {
 		padding: 0;
 		overflow: auto;
 		/*border: 1px solid #efefef;*/
-		border-radius: 3;
-		
+		border-radius: 3px;
 	}
 
 	.SortableItem {
@@ -866,6 +887,16 @@ export default {
 		color: #333;
 		font-weight: 400;
 		overflow: hidden;
+		
+		margin-right: 0.75rem;
+
+		
+	}
+	.SortableItem:last-child { margin-right: 0;  }
+
+	.button-bar {
+		height: auto;
+		width: 100%;		
 	}
 
 	.itemheader {
@@ -887,6 +918,53 @@ export default {
 		opacity: 0.4;
 		margin-right: 20px;
 		cursor: row-resize;
+	}
+	.list-intro {
+		width: 50%;
+	}
+	.list-intro p {
+		font-size: 15pt;
+		margin: 10px 0;
+		
+	}
+	.list-buttons {
+		width: 50%;
+	}
+
+	.pointer {cursor: pointer;}
+
+	/*
+	####################################################
+	M E D I A  Q U E R I E S
+	####################################################
+	*/
+	
+	/* 
+	Extra small devices (portrait phones, less than 576px) 
+	No media query since this is the default in Bootstrap because it is "mobile first"
+	*/
+	
+	
+	/* Small devices (landscape phones, 576px and up) */
+	@media (min-width: 576px) {  
+	
+	}
+	
+	/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
+	@media (min-width: 768px) {
+		.SortableItem { 
+			max-width: calc(33.333333% - 0.5rem);
+		}
+	}
+	
+	/* Large devices (desktops, 992px and up) */
+	@media (min-width: 992px) { 
+	
+	}
+	
+	/* Extra large devices (large desktops, 1200px and up) */
+	@media (min-width: 1200px) {  
+		
 	}
 
 </style>

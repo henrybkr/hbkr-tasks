@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<div class="container pt-4">
+		<div class="container-fluid">
 			<input autocomplete="off" type="text" class="todo-input" name="title" @keyup.enter="addTask" v-model="title" placeholder="What needs doing boss?">
 			<!-- Submit button if preferred, but keep in mind we need to add the form element back and include a @submit="addTask" for it to launch when submit is pressed -->
 			<!--<input type="submit" value="Submit" class="btn">-->
@@ -79,14 +79,14 @@ export default {
 		width: 100%;
 		padding: 10px 20px;
 		font-size: 18px;
-		margin-bottom: 16px;
+		
 		
 		&:focus {
 		outline: 0;
 		}
 
 		background-color: rgb(52, 58, 63);
-		border-radius: 2.5px;
+		border-radius: 3px;
 	}
 	.btn {
 	display: inline-block;
