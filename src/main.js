@@ -42,7 +42,7 @@ import bsBreakpoints from 'bs-breakpoints'
 bsBreakpoints.init();						// init
 bsBreakpoints.detectBreakpoint();			// detect
 bsBreakpoints.getCurrentBreakpoint();		// Return the current active responsive breakpoint
-alert(bsBreakpoints.getCurrentBreakpoint());
+//alert(bsBreakpoints.getCurrentBreakpoint());
 /* init not working for some reason */
 
 /* // Not currently used
