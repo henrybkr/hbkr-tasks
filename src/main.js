@@ -10,11 +10,11 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 // Fontawesome
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faBookmark, faLockOpen, faFlask, faLock } from '@fortawesome/free-solid-svg-icons'
+import { faBookmark, faLockOpen, faFlask, faLock, faRedo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { fab } from '@fortawesome/free-brands-svg-icons'
 
-library.add(fab, faBookmark, faLock, faFlask, faLockOpen)
+library.add(fab, faBookmark, faLock, faFlask, faLockOpen, faRedo)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 //

@@ -21,41 +21,65 @@
 						</b-button>
 					</div>
 				</div>
+				<!-- new version -->
+				<div class="row">
+					<draggable class="col-sm-12 col-lg-4 col-12" v-for="(item, index) in randomListData" :key="item.id" v-model="myArray" :index="index" group="people" @start="drag=true" @end="drag=false">
+						{{item.name}}
+						<draggable class="SortableList" v-for="(item, index) in item.itemArr" :index="index" :key="index" v-model="myArray" group="people" @start="drag=true" @end="drag=false" handle=".handle">
+							<div class="list-item">
+								<div class="SortableItem" >
+									<span v-if="moveTaskLock">
+										<div class="handleContainer">
+											<div class="handle"></div>
+										</div>
+									</span>
+									<span class="itemTitle">{{ item.order+1 }}) {{ item.title }}</span>
+								</div>
+							</div>
+								
+						</draggable>
+
+					</draggable>
+				</div>
 				
-				
-				
+
 				<div class="root1">
 					<!-- Horizontal version -->
+					<!--
 					<SlickList id="hor-list" :lockToContainerEdges="true" axis="x" v-model="orderedUserTaskLists" class="SortableList row">
 						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-12 col-md-4 col-lg-3 " :index="index" :key="index">
-							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div> <!-- Order (plus 1 to start at 1) and title of the list -->
+							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div>
 							
 							<div class="root2">
 								<SlickList :lockToContainerEdges="false" class="list mb-2" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
 									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
-										<span v-if="moveTaskLock" v-handle class="handle"></span> <!-- Handle only displays if list is unlocked -->
-										<span>{{ item.order+1 }}) {{ item.title }}</span> <!-- Order (plus 1 to start at 1) and title of the task -->
+										<span v-if="moveTaskLock" v-handle class="handle"></span>
+										<span>{{ item.order+1 }}) {{ item.title }}</span>
 									</SlickItem>
 								</SlickList>
 							</div>
 						</SlickItem>
 					</SlickList>
+					-->
 					<!-- Vertical version -->
+					<!--
 					<SlickList id="ver-list" :lockToContainerEdges="true" axis="y" v-model="orderedUserTaskLists" class="SortableList row d-none">
 						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-12 col-md-4 col-lg-3 " :index="index" :key="index">
-							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div> <!-- Order (plus 1 to start at 1) and title of the list -->
+							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div>
 							
 							<div class="root2">
 								<SlickList :lockToContainerEdges="false" class="list mb-2" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
 									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
-										<span v-if="moveTaskLock" v-handle class="handle"></span> <!-- Handle only displays if list is unlocked -->
-										<span>{{ item.order+1 }}) {{ item.title }}</span> <!-- Order (plus 1 to start at 1) and title of the task -->
+										<span v-if="moveTaskLock" v-handle class="handle"></span>
+										<span>{{ item.order+1 }}) {{ item.title }}</span>
 									</SlickItem>
 								</SlickList>
 							</div>
 						</SlickItem>
 					</SlickList>
+					-->
 				</div>
+				
 			</div>
 
 			<!-- -------------------------------- -->
@@ -110,6 +134,7 @@ import axios from 'axios';
 
 import todoItem from './todoItem.vue';
 import { SlickList, SlickItem, HandleDirective } from 'vue-slicksort'
+import draggable from 'vuedraggable'
 
 // This will need changing once online. Currently in dev mode
 axios.defaults.baseURL = "http://localhost:8000/api"
@@ -188,14 +213,16 @@ export default {
 							title: 'Game of Thrones'
 						}
 					]
-				}
+				},
+				
 			],
 		}
 	},
 	components: {
 		todoItem,
 		SlickItem,
-		SlickList
+		SlickList,
+		draggable,
 	},
 	props: ["taskList"],
 	computed: {
@@ -850,6 +877,7 @@ export default {
 		align-items: center;
 		width: 100%;
 		padding: 20px;
+		margin: 5px 0;
 		background-color: rgb(60, 66, 73);
 		/*border-bottom: 1px solid #efefef;*/
 		box-sizing: border-box;
@@ -857,13 +885,13 @@ export default {
 		color: rgb(206, 208, 209);
 		font-weight: 400;
 	}
-
+	/*
 	.stylizedHelper {
 		background-color: rgb(52, 58, 63);
 		color: rgb(75, 75, 75);
 		border-radius: 5px;
 	}
-
+	*/
 	.SortableList {
 		display: flex;
 		width: 100%;
@@ -877,9 +905,10 @@ export default {
 	}
 
 	.SortableItem {
-		display: inline;
+		
 		align-items: center;
 		padding: 0;
+		width: 100%;
 		
 		/*border-bottom: 1px solid #efefef;*/
 		box-sizing: border-box;
@@ -908,6 +937,10 @@ export default {
 		color: rgb(204, 206, 207);
 	}
 	
+	.handleContainer {
+		width: 20px;
+		height: 100%;
+	}
 	.handle {
 		display: block;
 		width: 18px;
@@ -917,7 +950,11 @@ export default {
 		background-repeat: no-repeat;
 		opacity: 0.4;
 		margin-right: 20px;
-		cursor: row-resize;
+		cursor:move;
+		float: left;
+	}
+	.itemTitle {
+		width: 100%;
 	}
 	.list-intro {
 		width: 50%;
@@ -929,6 +966,10 @@ export default {
 	}
 	.list-buttons {
 		width: 50%;
+	}
+	.listTitle {
+		font-weight: bold;
+		
 	}
 
 	.pointer {cursor: pointer;}
@@ -953,7 +994,7 @@ export default {
 	/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
 	@media (min-width: 768px) {
 		.SortableItem { 
-			max-width: calc(33.333333% - 0.5rem);
+			/*max-width: calc(33.333333% - 0.5rem);*/
 		}
 	}
 	

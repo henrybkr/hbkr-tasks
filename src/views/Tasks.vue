@@ -2,9 +2,9 @@
 	<div class="mainTasksContainer">
 		<div class="d-none container mt-5">
 			<p>errorInfo code = {{ errorInfo.code }}</p>
-			<p>errorInfo message = {{ errorInfo.message }}<br></p>
+			<p>errorInfo message = {{ errorInfo.apiResponse }}<br></p>
 			<p>taskList.length = {{ taskList.length }}</p>
-			<!--<b-button variant="success" @click="test()">{{ errorInfo.message }}</b-button>-->
+			<!--<b-button variant="success" @click="test()">{{ errorInfo.feedback }}</b-button>-->
 		</div>
 		<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
 			<div class="loadingSpace" v-if="displayLoading" v-bind:key="20">
@@ -17,14 +17,23 @@
 
 		<transition-group name="fade" enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
 			<div v-if="!displayLoading" v-bind:key="21">
-				<div class="errorSpace mt-5" v-if="displayError">
+				<div class="errorSpace" v-if="displayError">
 					<div class="container">
-						<b-alert show variant="dark">
-							<p>Uh oh, seems we've run into an issue. Let's have a look:</p>
-							<p>
-								<b>Error Code:</b> {{ errorInfo.code }}<br>
-								<b>API Response:</b> {{ errorInfo.message }}
-							</p>
+						<b-alert show variant="dark" class="mt-5 clearfix w-100">
+							<h3 class="alert-heading">Uh oh, seems we've run into an issue. Let's have a look:</h3>
+							<hr>
+							<div v-if="errorInfo.code">
+								<p class=" text-dark mb-0 pb-0"><b class="text-dark">Error Code:</b> {{ errorInfo.code }}<br></p>
+							</div>
+							<div v-if="errorInfo.apiResponse">
+								<p class=" text-dark mb-0 pb-0"><b class="text-dark">API Response:</b> {{ errorInfo.apiResponse }}<br></p>
+							</div>
+							<div v-if="errorInfo.feedback">
+								<p class="text-dark"><b class="text-dark">Feedback:</b> {{ errorInfo.feedback }}</p>
+							</div>
+							<!-- Reload button -->
+							<b-button @click="loadTasks()"><font-awesome-icon icon="redo"/></b-button>
+							
 						</b-alert>
 					</div>
 				</div>
@@ -74,21 +83,28 @@ export default {
   },
   // Testing purposes methods
   methods: {
-	// Not currently used. Probably shouldn't be running too many methods in the view.
-  },
-  created() {
-	// When created, collect all tasks in the database.
-	axios.get('/tasks')
+	
+
+	// Function to load tasks on command from the rest api.
+	loadTasks() {
+		// Change loading state
+		this.displayLoading = true;
+
+
+		axios.get('/tasks')
 		.then(response => {
 			// When we have a response:
-			
+
 			//console.log(response.data);
 		
 			if (response.data) {
+				
 				this.errorInfo.code = 10;  // Confirm that the api returned data, used for some checks.
-				this.errorInfo.message = "Success!"
+				this.errorInfo.apiResponse = "Success"
+				this.errorInfo.feedback = "Response was successfully received."
 			}
 			this.displayLoading = false;
+			this.displayError = false;
 
 			// A (probably bad) fix for no longer having a default 'editing' property. This is a property we don't store in the database.
 			for (let x in response.data) {
@@ -99,16 +115,37 @@ export default {
 	  	})
 		.catch(error => {
 			// When we have an error:
-
-			//console.log(error);
+			const response = error.response
+			
 
 			this.displayLoading = false;
 			this.displayError = true;
-			this.errorInfo.message = error.message;
-			this.errorInfo.code = 1;
+			this.errorInfo.apiResponse = error.message;
+			
+
+			if (error.message == "Network Error") {
+				this.errorInfo.feedback = "Struggling to communicate with the API, is it running?"
+				this.errorInfo.code = 0;
+			}
+			else {
+				this.errorInfo.code = error.response.status;
+
+				// Switch case for error status deciding feedback string
+				switch(response.status) {
+					case 500:
+						this.errorInfo.feedback = "Communicating with API but failing to retrieve records. Perhaps the database link is down?"
+
+				}
+			}
 		})
+	}
+
+  },
+  created() {
+	// When created, collect all tasks in the database.
+	this.loadTasks();
 	
-  }
+	}
 }
 </script>
 

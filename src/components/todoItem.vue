@@ -7,7 +7,7 @@
 				<div v-if="!task.editing" @dblclick="editMode(task)" class="todo-item-label"><p>{{task.title}}</p></div>
 				<input v-else class="todo-item-edit" @blur="editComplete(task)" @keyup.enter="editComplete(task)" @keyup.esc="editCancel(task)" v-focus type="text"  v-model="task.title">
 			</div>
-			<button :class="{ active: important == true }" @click="pinTask(task)" class="pin-button myAnimation" ><font-awesome-icon icon="bookmark" /></button>
+			<button :class="{ active: important == true }" @click="pinTask(task)" class="pin-button myAnimation"><font-awesome-icon icon="bookmark" /></button>
 			<div class="todo-del">
 				<div>
 					<!-- Delete button with onclick delete emit command -->
