@@ -22,76 +22,41 @@
 					</div>
 				</div>
 				<!-- new version -->
-				<div class="row">
-					<draggable class="col-sm-12 col-lg-4 col-12" v-for="(item, index) in randomListData" :key="item.id" v-model="myArray" :index="index" group="people" @start="drag=true" @end="drag=false">
-						{{item.name}}
-						<draggable class="SortableList" v-for="(item, index) in item.itemArr" :index="index" :key="index" v-model="myArray" group="people" @start="drag=true" @end="drag=false" handle=".handle">
-							<div class="list-item">
-								<div class="SortableItem" >
-									<span v-if="moveTaskLock">
-										<div class="handleContainer">
-											<div class="handle"></div>
-										</div>
-									</span>
-									<span class="itemTitle">{{ item.order+1 }}) {{ item.title }}</span>
+				<div class="fullListArea">
+					<!--v-model="myArray"-->
+					<draggable class="row mainListDraggable p-0 m-0" group="people" @start="draggingList(true, $event)" @end="draggingList(false, $event)" handle=".handle">
+						<div class="col-sm-12 col-lg-4 col-xl-3 col-12 bg-transition p-1" v-for="(item, index) in allListData" :key="item.id" :index="index">
+							<div class="listContainer">
+								<div class="listHeaderContainer">
+									<div class="handleContainerLeft">
+										<div class="taskLeftIcon handle"></div>
+									</div>
+									<div class="listHeader">{{item.name}}</div>
+									
+								</div>
+								<div class="listHeaderButtonContainer">
+									<div class="taskRightIcon edit pointer"></div>
+								</div>
+								<div class="SortableListElement" v-for="(item, index) in item.itemArr" :index="index" :key="index" group="people" @start="drag=true" @end="drag=false" handle=".handle">
+									<div class="listItem">
+										
+										<div class="itemTitle"><!--{{ item.order+1 }}) -->{{ item.title }}</div>
+										
+									</div>
+										
 								</div>
 							</div>
-								
-						</draggable>
+						</div>
 
 					</draggable>
 				</div>
-				
-
-				<div class="root1">
-					<!-- Horizontal version -->
-					<!--
-					<SlickList id="hor-list" :lockToContainerEdges="true" axis="x" v-model="orderedUserTaskLists" class="SortableList row">
-						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-12 col-md-4 col-lg-3 " :index="index" :key="index">
-							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div>
-							
-							<div class="root2">
-								<SlickList :lockToContainerEdges="false" class="list mb-2" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
-									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
-										<span v-if="moveTaskLock" v-handle class="handle"></span>
-										<span>{{ item.order+1 }}) {{ item.title }}</span>
-									</SlickItem>
-								</SlickList>
-							</div>
-						</SlickItem>
-					</SlickList>
-					-->
-					<!-- Vertical version -->
-					<!--
-					<SlickList id="ver-list" :lockToContainerEdges="true" axis="y" v-model="orderedUserTaskLists" class="SortableList row d-none">
-						<SlickItem v-for="(item, index) in randomListData" class="SortableItem col-12 col-md-4 col-lg-3 " :index="index" :key="index">
-							<div class="itemheader">{{ item.name }} ({{ item.listOrder+1 }})</div>
-							
-							<div class="root2">
-								<SlickList :lockToContainerEdges="false" class="list mb-2" v-model="orderedUserTaskItems" helperClass="stylizedHelper" useDragHandle @sort-end="changeTaskOrder($event)" @input="testing($array)">
-									<SlickItem class="list-item" v-for="(item, index) in item.itemArr" :index="index" :key="index">
-										<span v-if="moveTaskLock" v-handle class="handle"></span>
-										<span>{{ item.order+1 }}) {{ item.title }}</span>
-									</SlickItem>
-								</SlickList>
-							</div>
-						</SlickItem>
-					</SlickList>
-					-->
-				</div>
-				
 			</div>
-
-			<!-- -------------------------------- -->
 			
 			<transition-group name="fade" enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
 				<div class="myTask" v-bind:key="task.id" v-for="task in taskListFiltered">
 					<todoItem v-bind:task="task" />
 				</div>
 			</transition-group>
-			<!-- Separator -->
-			<!--<div class="line" />-->
-			<!-- End Separator -->
 			<transition-group name="fade" enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
 			<div v-if="!taskList.length" v-bind:key="1" class="noTaskText"><i>No tasks</i>
 				<hr>
@@ -119,7 +84,7 @@
 				</div>
 				<div>
 					<transition name="fade">
-					<button v-if="showClearCompleteButton" @click="clearCompleted">Clear Completed</button>
+						<button v-if="showClearCompleteButton" @click="clearCompleted">Clear Completed</button>
 					</transition>
 				</div>
 			</div>
@@ -155,67 +120,7 @@ export default {
 			beforeEditCache: '',
 			filter: 'all',
 			moveTaskLock: false,
-			randomListData: [
-				{
-					listOrder: 0,
-					name: 'Shopping List',
-					itemArr: [
-						{
-							order: 2,
-							title: 'New Desktop PC'
-						},
-						{
-							order: 0,
-							title: 'Updated Smartphone'
-						},
-						{
-							order: 1,
-							title: 'HQ headphones'
-						}
-					]
-				},
-				{
-					listOrder: 2,
-					name: 'Movies to watch',
-					itemArr: [
-						{
-							order: 0,
-							title: 'Inception'
-						},
-						{
-							order: 1,
-							title: 'King Kong'
-						},
-					]
-				},
-				{
-					listOrder: 1,
-					name: 'TV shows to watch',
-					itemArr: [
-						{
-							order: 0,
-							title: 'Breaking Bad'
-						},
-						{
-							order: 1,
-							title: 'Narcos'
-						},
-						{
-							order: 2,
-							title: '30 Rock'
-						},
-						{
-							order: 3,
-							title: 'The Simpsons'
-						},
-						{
-							order: 4,
-							title: 'Game of Thrones'
-						}
-					]
-				},
-				
-			],
+			
 		}
 	},
 	components: {
@@ -226,6 +131,10 @@ export default {
 	},
 	props: ["taskList"],
 	computed: {
+		allListData() {
+			// return this.$store.state.ListData
+			return this.$store.getters.getListItems
+		},
 
 		orderedUserTaskItems: {
 			get: function () {
@@ -277,6 +186,7 @@ export default {
 				//alert(this.randomListData[0].listOrder)
 			}
 		},
+		
 		// This is reactive filter functionality.
 
 		// Note to self, how this is currently working:
@@ -367,12 +277,46 @@ export default {
 		}
 	},
 	methods: {
+		draggingList(dragging, event) {
+			console.log("dragging = "+dragging)
+			let outer = document.getElementsByClassName("mainListDraggable")[0]
+			// Basic styling for list dragging
+			if (dragging) {
+				event.item.classList.add("moveListHighlight");
+				outer.classList.add("dashedParentList");
+				//
+			}
+			else {
+				event.item.classList.remove("moveListHighlight");
+				outer.classList.remove("dashedParentList");
+			}
+		},
 		blah(val) {
 			alert(val);
 		},
 		
 		listReorderSwitch() {
 			this.moveTaskLock = !this.moveTaskLock;
+			var elements = document.getElementsByClassName("handleContainerLeft")	// Collect all "left handle" moving elements on the page.
+
+			if (this.moveTaskLock) {
+				let delay = 0
+				for(let i=0;i<elements.length;i++) {
+					// Produce a different delay for each element, adds to presentation.
+					setTimeout(() => {
+						// Add the class that "shows" the element to the user.
+						elements[i].classList.add("handleContainerLeftShow");
+					}, delay);
+					delay+=50;
+					
+				}
+				
+			}
+			else {
+				// Hide the handles, no delay effect required
+				for(let i=0;i<elements.length;i++) { elements[i].classList.remove("handleContainerLeftShow"); }
+			}
+
 		},
 				/*
 				//alert("okay, lets unlock");
@@ -859,102 +803,134 @@ export default {
 		height: 100%;
 	}
 
-	.list {
-		max-height: 80vh;
-		height: auto;
-		width: 100%;
-		margin: 0 auto;
-		padding: 0;
-		overflow: auto;
-		//background-color: #f3f3f3;
-		//border: 1px solid #efefef;
-		border-radius: 3;
-		
-	}
+	
 
-	.list-item {
+	.listItem {
 		display: flex;
 		align-items: center;
 		width: 100%;
 		padding: 20px;
-		margin: 5px 0;
+		margin: 0;
 		background-color: rgb(60, 66, 73);
-		/*border-bottom: 1px solid #efefef;*/
 		box-sizing: border-box;
 		user-select: none;
 		color: rgb(206, 208, 209);
 		font-weight: 400;
+		border-radius: 3px;
 	}
-	/*
-	.stylizedHelper {
-		background-color: rgb(52, 58, 63);
-		color: rgb(75, 75, 75);
-		border-radius: 5px;
+	.listItem:hover {
+		background-color: rgb(58, 64, 70);
 	}
-	*/
-	.SortableList {
+	.listInner {
+		padding: 20px;
+		width: calc(100% - 20px);
+	}
+	.mainListDraggable {
+		outline: 5px;
+		outline-style: dashed;
+		outline-offset: 0;
+		outline-color: rgba(255, 255, 255, 0);
+		transition: outline .5s ease-in-out;
+	}
+	.bg-transition {
+		transition: background-color .5s ease-in-out;
+	}
+	.dashedParentList {
+		outline: 5px;
+		outline-style: dashed;
+		outline-color: rgba(255, 255, 255, 0.5) !important;
+		outline-offset: 0px;
+	}
+	.moveListHighlight {
+		background-color: rgba(255, 255, 255, 0.03);
+		opacity: 0.5;
+	}
+	.SortableListElement {
 		display: flex;
 		width: 100%;
-		white-space: nowrap;
+		
 		max-height: 80vh;
 		margin: 0 auto;
 		padding: 0;
 		overflow: auto;
 		/*border: 1px solid #efefef;*/
-		border-radius: 3px;
-	}
-
-	.SortableItem {
 		
-		align-items: center;
-		padding: 0;
+	}
+	.listContainer {
 		width: 100%;
-		
-		/*border-bottom: 1px solid #efefef;*/
-		box-sizing: border-box;
-		user-select: none;
-		color: #333;
-		font-weight: 400;
+		border-radius: 3px;
 		overflow: hidden;
-		
-		margin-right: 0.75rem;
-
+		background-color: rgb(52, 58, 63);
+		color: rgb(204, 206, 207);
+	}
+	.listHeaderContainer {
+		display: flex;
+		align-items: center;
+		padding: 15px 15px 15px 20px;
+		width: calc(100% - 60px);
+		float: left;
+		margin: 0 auto;
+	}
+	.listHeaderButtonContainer {
+		display: flex;
+		align-items: center;
+		width: 60px;
+		float: left;
+		padding: 20px;
 		
 	}
-	.SortableItem:last-child { margin-right: 0;  }
-
+	.taskRightIcon {
+		display: block;
+		width: 20px;
+		height: 20px;
+		
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
+		opacity: 0.5;
+		cursor:move;
+	}
+	.listHeader {
+		user-select: none;
+		font-size: 16pt;
+		font-weight: 500
+	}
+	
 	.button-bar {
 		height: auto;
 		width: 100%;		
 	}
 
-	.itemheader {
-		width: 100%;
-		padding: 10px;
-		
-		
-		background-color: rgb(52, 58, 63);
-		color: rgb(204, 206, 207);
+	.handleContainerLeft {
+		width: 0px;
+		overflow: hidden;
+		padding-right: 0px;
+		transition: width .25s ease-in-out, padding-right .25s ease-in-out;
+		float: left;		
 	}
-	
-	.handleContainer {
-		width: 20px;
-		height: 100%;
+	.handleContainerLeftShow {
+		width: 30px !important;
+		padding-right: 5px;
 	}
-	.handle {
+	.taskLeftIcon {
 		display: block;
 		width: 18px;
 		height: 18px;
-		background-image: url( $assets + "/images/handle_white.svg");
 		background-size: contain;
 		background-repeat: no-repeat;
-		opacity: 0.4;
-		margin-right: 20px;
+		background-position: center;
+		opacity: 0.5;
 		cursor:move;
 		float: left;
 	}
+	
+	.handle { background-image: url( $assets + "/images/handle_white.svg");}
+	.dots { background-image: url( $assets + "/images/dots_white.svg"); }
+	.edit { background-image: url( $assets + "/images/edit_white.svg");}
+	
 	.itemTitle {
 		width: 100%;
+		height: auto;
 	}
 	.list-intro {
 		width: 50%;
@@ -972,7 +948,7 @@ export default {
 		
 	}
 
-	.pointer {cursor: pointer;}
+	.pointer {cursor: pointer !important;}
 
 	/*
 	####################################################
@@ -993,7 +969,7 @@ export default {
 	
 	/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
 	@media (min-width: 768px) {
-		.SortableItem { 
+		.SortableItemElement { 
 			/*max-width: calc(33.333333% - 0.5rem);*/
 		}
 	}
@@ -1007,5 +983,6 @@ export default {
 	@media (min-width: 1200px) {  
 		
 	}
+
 
 </style>
